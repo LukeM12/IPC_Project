@@ -42,6 +42,9 @@ int main (void){
 		perror("msgctl");
 		exit(1);
 	}
+	for(;;;){
+		msg
+	}
 	printf("Message queue was destroyed");
 	return 0;
 }

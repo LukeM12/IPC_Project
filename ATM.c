@@ -17,15 +17,11 @@ int main(int argc, const char *argv[]){
 	//struct msgbuf receiver;
 	//Make an ftok
 	//For the editor communication IPC 
-	if ((user_key = ftok("DBeditor.c", 'E')) == -1){
+	if ((user_key = ftok("DBserver.c", 'E')) == -1){
 		perror("ftok");
 		exit(1);
 	}
-	//For the user communication IPC 
-	if ((editor_key = ftok("DBeditor.c", 'E')) == -1){
-		perror("ftok");
-		exit(1);
-	}
+
 	/* Get an instance of the ,message queue */
 	if ((messageQID = msgget(editor_key, 0644 | IPC_CREAT)) == -1){
 		perror("msgget");
