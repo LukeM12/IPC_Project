@@ -32,12 +32,13 @@ typedef struct accEntry
 	int pin;
 	float funds;
 }accEntry;
-
+/* This is the main data stucture to pass off 
+*/
 typedef struct message
 {
 	long messageType;
 	accEntry data;
-}message;
+} message;
 
 
 int createMsgQ();
@@ -49,13 +50,16 @@ void dbEditor();
 
 int main(int argc, char const *argv[])
 {
-		
+		printf("Hello WOrld");limits
 	return 0;
 }
 
-void createMsgQ(int key){
+int createMsgQ(int key){
 	int msgQid;
-	msgQid = msgget((key_t)1234, IPC_CREAT| 0600);
+	key = ftok("/home/beej/somefile", 'b');
+	msqid = msgget(key, 0666 | IPC_CREAT);
+	// Let's leave the permissions open for now.
+	//msgQid = msgget((key_t)1234, IPC_CREAT| 0600);
 	if (msgQid == -1)
 	{
 		perror("msget failed");
@@ -99,6 +103,20 @@ int receiveMsg(int msgQid, message *msg, int messageType, int flag){
 	}
 
 }
+//i sem nt semctl(int semid, int semnum, int cmd, ...);
+
+
+       // int sem_wait(sem_t *sem);
+
+       // int sem_trywait(sem_t *sem);
+
+      // int sem_timedwait(sem_t *sem, const struct timespec *abs_timeout);
+
+       // int semget(key_t key, int nsems, int semflg);
+// msgrcv(msqid, &pmb, sizeof(struct pirate_msgbuf) - sizeof(long), 2, 0);
+//cmd which tells msgctl() how to behave
+//Destructor
+//msgctl(msqid, IPC_RMID, NULL);
 
 void atm(int accNumber){
 
