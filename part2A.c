@@ -103,6 +103,7 @@ int receiveMsg(int msgQid, message *msg, int messageType, int flag){
 	}
 
 }
+//sem referneces
 //i sem nt semctl(int semid, int semnum, int cmd, ...);
 
 
