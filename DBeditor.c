@@ -21,11 +21,7 @@ int main(int argc, const char *argv[]){
 		perror("ftok");
 		exit(1);
 	}
-	//For the user communication IPC 
-	if ((editor_key = ftok("DBeditor.c", 'E')) == -1){
-		perror("ftok");
-		exit(1);
-	}
+
 	/* Get an instance of the ,message queue */
 	if ((messageQID = msgget(editor_key, 0644 | IPC_CREAT)) == -1){
 		perror("msgget");

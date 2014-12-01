@@ -1,5 +1,7 @@
 /*
 **DBserver is the broker between the editor raw data and the ATM Machine
+Note : the editor will always take precedence in any operation
+Because the user is disposable and the server always need to function independently 
 # author : Luke Morrison
 Contributor/Partner Abhinav Thukral
 
@@ -20,32 +22,67 @@ struct my_msgbuf {
 // .suitable  for use with msgget(2),
 //        semget(2), or shmget(2).
 int main (void){
-	key_t key;
-	int messageQID;
-	//struct msgbuf receiver;
-	//Make an ftok
-	if ((key = ftok("DBeditor.c", 23)) == -1){
+	key_t user_key;
+	key_t editor_key;
+	int ATM_ID;
+	int EDITOR_ID;
+	struct my_msgbuf userBuffer;
+
+	if ((editor_key = ftok("DBeditor.c", 'E')) == -1){
 		perror("ftok");
 		exit(1);
 	}
-	/* Get an instance of the ,message queue */
-	if ((messageQID = msgget(key, 0644 | IPC_CREAT)) == -1){
+
+		//For the user communication IPC  'A' for ATM
+	if ((user_key = ftok("ATM.c", 'A')) == -1){
+		perror("ftok");
+		exit(1);
+	}
+		//For the editor communication IPC ' E' for EDITOR
+	if ((EDITOR_ID = msgget(editor_key, 0644 | IPC_CREAT)) == -1){
+		printf("Editor msgget\n");
 		perror("msgget");
 		exit(1);
 	}
-	else {
-		printf("The message Queue was created and the key was made \n");
+		/* Get an instance of the user message queue */
+	if ((ATM_ID = msgget(user_key, 0644 | IPC_CREAT)) == -1){
+		printf("ATM msgget\n");
+		perror("msgget");
+		exit(1);
 	}
+	//Send
+
+	for(;;) { /* Spock never quits! */
+		if (msgrcv(ATM_ID, &userBuffer, sizeof(userBuffer.messagetext), 0, 0) == -1) {
+			perror("msgrcv");
+			exit(1);
+		}
+		printf("ATM SAYS: \"%s\"\n", userBuffer.messagetext);
+	}
+	// while(fgets(userBuffer.messagetext, sizeof(userBuffer.messagetext), stdin) != NULL){
+	// 	int len = strlen(userBuffer.messagetext);
+
+	// 	//now we wnat to get the message
+	// 	if (msgsnd(ATM_ID, &userBuffer, sizeof(userBuffer), 0) == -1){
+	// 		perror("msgget");
+	// 		exit(1);
+	// 	}
+	// }
+
 	int result;
-	if ((msgctl(messageQID, IPC_RMID, NULL)) == -1)
+	if ((msgctl(ATM_ID, IPC_RMID, NULL)) == -1)
 	{
 		perror("msgctl");
 		exit(1);
 	}
-	for(;;;){
-		msg
+
+	if ((msgctl(EDITOR_ID, IPC_RMID, NULL)) == -1)
+	{
+		perror("msgctl");
+		exit(1);
 	}
 	printf("Message queue was destroyed");
+	
 	return 0;
 }
 
@@ -54,6 +91,8 @@ int main (void){
 // int msgget(key_t key, int msgflg);
 
        // int sem_wait(sem_t *sem);
+//int msgsnd(int msqid, const void *msgp, size_t msgsz, int msgflg);
+
 
        // int sem_trywait(sem_t *sem);
 
