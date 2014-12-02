@@ -27,57 +27,65 @@ int main (void){
 	int ATM_ID;
 	int EDITOR_ID;
 	struct my_msgbuf userBuffer;
+	struct my_msgbuf editorBuffer;
+//This is an outgoing message IPC
+	if ((editor_key = ftok("DBserver.c", 'E')) == -1){
+		perror("ftok");
+		exit(1);
+	}
 
-	// if ((editor_key = ftok("DBeditor.c", 'E')) == -1){
-	// 	perror("ftok");
-	// 	exit(1);
-	// }
-
-		//For the user communication IPC  'A' for ATM
+//This is an incoming mnessage IPC
 	if ((user_key = ftok("ATM.c", 'Q')) == -1){
 		perror("ftok");
 		exit(1);
 	}
 		//For the editor communication IPC ' E' for EDITOR
-	// if ((EDITOR_ID = msgget(editor_key, 0644)) == -1){
-	// 	printf("Editor msgget\n");
-	// 	perror("msgget");
-	// 	exit(1);
-	// }
+	if ((EDITOR_ID = msgget(editor_key, 0644 | IPC_CREAT)) == -1){
+		printf("Editor msgget\n");
+		perror("msgget");
+		exit(1);
+	}
 	// 	/* Get an instance of the user message queue */
 	if ((ATM_ID = msgget(user_key, 0644 | IPC_CREAT)) == -1){
 		perror("msgget");
 		exit(1);
 	}
+		editorBuffer.mtype = 1; /* we don't really care in this case */
 	for(;;) { /* Spock never quits! */
 		if (msgrcv(ATM_ID, &userBuffer, sizeof(userBuffer.messagetext), 0, 0) == -1) {
 			perror("msgrcv");
 			exit(1);
 		}
+		else{
+			printf("Hello World");
+			strcpy(editorBuffer.messagetext, userBuffer.messagetext);
+			int len = strlen(editorBuffer.messagetext);
+
+			if (editorBuffer.messagetext[len-1] == '\n') editorBuffer.messagetext[len-1] = '\0';
+
+			printf("This is the value %s",editorBuffer.messagetext);
+
+			if (msgsnd(EDITOR_ID, &editorBuffer,len+1, 0) == -1){
+				perror("msgsnd");
+			}
+			else{
+				printf("\n\nit did not send");
+			}
+		}
 		printf("ATM SAYS: \"%s\"\n", userBuffer.messagetext);
 	}
-	// while(fgets(userBuffer.messagetext, sizeof(userBuffer.messagetext), stdin) != NULL){
-	// 	int len = strlen(userBuffer.messagetext);
 
-	// 	//now we wnat to get the message
-	// 	if (msgsnd(ATM_ID, &userBuffer, sizeof(userBuffer), 0) == -1){
-	// 		perror("msgget");
-	// 		exit(1);
-	// 	}
-	// }
+	if ((msgctl(ATM_ID, IPC_RMID, NULL)) == -1)
+	{
+		perror("msgctl");
+		exit(1);
+	}
 
-	// int result;
-	// if ((msgctl(ATM_ID, IPC_RMID, NULL)) == -1)
-	// {
-	// 	perror("msgctl");
-	// 	exit(1);
-	// }
-
-	// if ((msgctl(EDITOR_ID, IPC_RMID, NULL)) == -1)
-	// {
-	// 	perror("msgctl");
-	// 	exit(1);
-	// }
+	if ((msgctl(EDITOR_ID, IPC_RMID, NULL)) == -1)
+	{
+		perror("msgctl");
+		exit(1);
+	}
 	printf("Message queue was destroyed");
 	
 	return 0;
