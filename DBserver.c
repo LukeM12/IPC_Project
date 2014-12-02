@@ -34,7 +34,7 @@ int main (void){
 	// }
 
 		//For the user communication IPC  'A' for ATM
-	if ((user_key = ftok("DBserver.c", 'Q')) == -1){
+	if ((user_key = ftok("ATM.c", 'Q')) == -1){
 		perror("ftok");
 		exit(1);
 	}
