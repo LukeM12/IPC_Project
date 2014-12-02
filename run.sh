@@ -3,6 +3,6 @@
 echo `uname -o`
 # executing bash command without backticks
 echo uname -o 
-echo `gcc spock.c -o spock`
-echo `./spock`
-
+echo `gcc ATM.c -o atm`
+echo `gcc DBeditor.c -o editor`
+echo `gcc DBserver.c -o server`
