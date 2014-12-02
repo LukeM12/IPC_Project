@@ -28,30 +28,27 @@ int main (void){
 	int EDITOR_ID;
 	struct my_msgbuf userBuffer;
 
-	if ((editor_key = ftok("DBeditor.c", 'E')) == -1){
-		perror("ftok");
-		exit(1);
-	}
+	// if ((editor_key = ftok("DBeditor.c", 'E')) == -1){
+	// 	perror("ftok");
+	// 	exit(1);
+	// }
 
 		//For the user communication IPC  'A' for ATM
-	if ((user_key = ftok("ATM.c", 'A')) == -1){
+	if ((user_key = ftok("DBserver.c", 'Q')) == -1){
 		perror("ftok");
 		exit(1);
 	}
 		//For the editor communication IPC ' E' for EDITOR
-	if ((EDITOR_ID = msgget(editor_key, 0644 | IPC_CREAT)) == -1){
-		printf("Editor msgget\n");
-		perror("msgget");
-		exit(1);
-	}
-		/* Get an instance of the user message queue */
+	// if ((EDITOR_ID = msgget(editor_key, 0644)) == -1){
+	// 	printf("Editor msgget\n");
+	// 	perror("msgget");
+	// 	exit(1);
+	// }
+	// 	/* Get an instance of the user message queue */
 	if ((ATM_ID = msgget(user_key, 0644 | IPC_CREAT)) == -1){
-		printf("ATM msgget\n");
 		perror("msgget");
 		exit(1);
 	}
-	//Send
-
 	for(;;) { /* Spock never quits! */
 		if (msgrcv(ATM_ID, &userBuffer, sizeof(userBuffer.messagetext), 0, 0) == -1) {
 			perror("msgrcv");
@@ -69,18 +66,18 @@ int main (void){
 	// 	}
 	// }
 
-	int result;
-	if ((msgctl(ATM_ID, IPC_RMID, NULL)) == -1)
-	{
-		perror("msgctl");
-		exit(1);
-	}
+	// int result;
+	// if ((msgctl(ATM_ID, IPC_RMID, NULL)) == -1)
+	// {
+	// 	perror("msgctl");
+	// 	exit(1);
+	// }
 
-	if ((msgctl(EDITOR_ID, IPC_RMID, NULL)) == -1)
-	{
-		perror("msgctl");
-		exit(1);
-	}
+	// if ((msgctl(EDITOR_ID, IPC_RMID, NULL)) == -1)
+	// {
+	// 	perror("msgctl");
+	// 	exit(1);
+	// }
 	printf("Message queue was destroyed");
 	
 	return 0;

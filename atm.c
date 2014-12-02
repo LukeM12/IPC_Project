@@ -20,8 +20,8 @@ int main(void)
 	struct my_msgbuf buf;
 	int msqid;
 	key_t key;
-//This is just to create the 
-	if ((key = ftok("kirk.c", 'B')) == -1) {
+
+	if ((key = ftok("spock.c", 'P')) == -1) {
 		perror("ftok");
 		exit(1);
 	}

@@ -30,15 +30,13 @@ int main(int argc, const char *argv[]){
 	else {
 		printf("The message Queue was created and the key was made \n");
 	}
-	int result;
-	if ((msgctl(messageQID, IPC_RMID, NULL)) == -1)
-	{
+
+
+	if ((msgctl(messageQID, IPC_RMID, NULL)) == -1){
 		perror("msgctl");
 		exit(1);
 	}
-	// for(;;;){
-	// 	//int msgsnd(int msqid, const void *msgp, size_t msgsz, int msgflg);
-	// }
+
 	printf("Message queue was destroyed");
 	return 0;
 
