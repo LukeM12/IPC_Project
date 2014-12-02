@@ -63,7 +63,7 @@ int main (void){
 
 			if (editorBuffer.messagetext[len-1] == '\n') editorBuffer.messagetext[len-1] = '\0';
 
-			printf("This is the value %s",editorBuffer.messagetext);
+			printf("This is the value Partner%s",editorBuffer.messagetext);
 
 			if (msgsnd(EDITOR_ID, &editorBuffer,len+1, 0) == -1){
 				perror("msgsnd");
