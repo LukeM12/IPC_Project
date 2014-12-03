@@ -1,3 +1,8 @@
+/**
+ * Author Luke Morrison
+ * email : lukemo132@gmail.com
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
