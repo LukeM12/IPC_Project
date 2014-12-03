@@ -27,7 +27,7 @@ int main(int argc, const char *argv[]){
 		perror("msgget");
 		exit(1);
 	}
-	printf("Starting input command chaoin\n");
+	printf("Welcome to the ATM. \nPlease Input Your Desired Operation\n==\n");
 	serverBuffer.mtype = 1; /* we don't really care in this case */
 	while(fgets(serverBuffer.messagetext, sizeof serverBuffer.messagetext , stdin) != NULL){
 		int len = strlen(serverBuffer.messagetext);

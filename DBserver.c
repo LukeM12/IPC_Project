@@ -28,14 +28,9 @@ int main (void){
 	int EDITOR_ID;
 	struct my_msgbuf userBuffer;
 	struct my_msgbuf editorBuffer;
+	/* Configure the MSGQueue for the ATM Machine */
 //This is an outgoing message IPC
 	if ((editor_key = ftok("DBserver.c", 'E')) == -1){
-		perror("ftok");
-		exit(1);
-	}
-
-//This is an incoming mnessage IPC
-	if ((user_key = ftok("ATM.c", 'Q')) == -1){
 		perror("ftok");
 		exit(1);
 	}
@@ -45,34 +40,60 @@ int main (void){
 		perror("msgget");
 		exit(1);
 	}
+/* Configure the MSQueue for the Database Editor */
+	if ((user_key = ftok("ATM.c", 'Q')) == -1){
+		perror("ftok");
+		exit(1);
+	}
+
 	// 	/* Get an instance of the user message queue */
 	if ((ATM_ID = msgget(user_key, 0644 | IPC_CREAT)) == -1){
 		perror("msgget");
 		exit(1);
 	}
-		editorBuffer.mtype = 1; /* we don't really care in this case */
-	for(;;) { /* Spock never quits! */
+	printf("Server is connected to Database and waiting for User Input\n==\n");
+	editorBuffer.mtype = 1; /* we don't really care in this case */
+	for(;;) { 
 		if (msgrcv(ATM_ID, &userBuffer, sizeof(userBuffer.messagetext), 0, 0) == -1) {
 			perror("msgrcv");
 			exit(1);
 		}
+
+		/**
+		 * If the message was passed in, this is where the sanitation will go
+		 * To Fulfill the functional requirements of the assignment
+		 */
 		else{
-			printf("Hello World");
-			strcpy(editorBuffer.messagetext, userBuffer.messagetext);
+			//So it received a message. First get a copy of that.
+			//strcpy(editorBuffer.messagetext, userBuffer.messagetext);
 			int len = strlen(editorBuffer.messagetext);
+		   sprintf
+		    (editorBuffer.messagetext, userBuffer.messagetext);
+   // sendMsg.type = CLIENT_MSG_TYPE;
+   // sprintf
+   //  (sendMsg.text, "From CLIENT: Are you there?");
+   // msgFlags = 0;
+
+   // if (msgsnd(msgQID, &sendMsg, 
+   //   strlen(sendMsg.text)+1, msgFlags) < 0)
+   // {
+   // perror("CLIENT: msgsnd");
+   // exit(EXIT_FAILURE);
+   // }
 
 			if (editorBuffer.messagetext[len-1] == '\n') editorBuffer.messagetext[len-1] = '\0';
 
-			printf("This is the value Partner%s",editorBuffer.messagetext);
-
+			printf("Value Copied to Buffer Memory: %s\n",editorBuffer.messagetext);
+			//try and send it
 			if (msgsnd(EDITOR_ID, &editorBuffer,len+1, 0) == -1){
+				printf("Message was not sent\n");
 				perror("msgsnd");
 			}
 			else{
-				printf("\n\nit did not send");
+				printf("\n\nThe message was sent\n");
 			}
 		}
-		printf("ATM SAYS: \"%s\"\n", userBuffer.messagetext);
+		//printf("ATM SAYS: \"%s\"\n", userBuffer.messagetext);
 	}
 
 	if ((msgctl(ATM_ID, IPC_RMID, NULL)) == -1)

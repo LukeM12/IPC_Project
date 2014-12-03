@@ -11,34 +11,31 @@ struct my_msgbuf {
 };
 
 int main(int argc, const char *argv[]){
-	key_t user_key;
-	key_t editor_key;
-	int editor_ID;
+	key_t server_key;
+	int server_ID;
 	struct my_msgbuf receiver;
 	//Make an ftok
 	//For the editor communication IPC 
-	if ((user_key = ftok("DBserver.c", 'E')) == -1){
+	if ((server_key = ftok("DBserver.c", 'E')) == -1){
 		perror("ftok");
 		exit(1);
 	}
 
 	/* Get an instance of the ,message queue */
-	if ((editor_ID = msgget(editor_key, 0644 | IPC_CREAT)) == -1){
+	if ((server_ID = msgget(server_key, 0644 | IPC_CREAT)) == -1){
 		perror("msgget");
 		exit(1);
 	}
-	else {
-		printf("The message Queue was created and the key was made \n");
-	}
+	printf("The Database Listener is awake and waiting for Database Input\n=====\n");
 	for(;;) { /* Spock never quits! */
-		if (msgrcv(editor_ID, &receiver, sizeof(receiver.messagetext), 0, 0) == -1) {
+		if (msgrcv(server_ID, &receiver, sizeof(receiver.messagetext), 0, 0) == -1) {
 			perror("msgrcv");
 			exit(1);
 		}
 
 		printf("DBserver SAYS: \"%s\"\n", receiver.messagetext);
 	}
-	if ((msgctl(editor_ID, IPC_RMID, NULL)) == -1){
+	if ((msgctl(server_ID, IPC_RMID, NULL)) == -1){
 		perror("msgctl");
 		exit(1);
 	}
