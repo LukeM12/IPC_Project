@@ -27,27 +27,27 @@ int main(int argc, const char *argv[]){
 	}
 	//parseInputFile();
 test_user_Exists();
-	// /* Get an instance of the ,message queue */
-	// if ((server_ID = msgget(server_key, 0644 | IPC_CREAT)) == -1){
-	// 	perror("msgget");
-	// 	exit(1);
-	// }
-	// printf("The Database Listener is awake and waiting for Database Input\n=====\n");
-	// for(;;) { /* Spock never quits! */
-	// 	if (msgrcv(server_ID, &receiver, sizeof(receiver.messagetext), 0, 0) == -1) {
-	// 		perror("msgrcv");
-	// 		exit(1);
-	// 	}
+	/* Get an instance of the ,message queue */
+	if ((server_ID = msgget(server_key, 0644 | IPC_CREAT)) == -1){
+		perror("msgget");
+		exit(1);
+	}
+	printf("The Database Listener is awake and waiting for Database Input\n=====\n");
+	for(;;) { /* Spock never quits! */
+		if (msgrcv(server_ID, &receiver, sizeof(receiver.messagetext), 0, 0) == -1) {
+			perror("msgrcv");
+			exit(1);
+		}
 
-	// 	printf("DBserver SAYS: \"%s\"\n", receiver.messagetext);
-	// }
-	// if ((msgctl(server_ID, IPC_RMID, NULL)) == -1){
-	// 	perror("msgctl");
-	// 	exit(1);
-	// }
+		printf("DBserver SAYS: \"%s\"\n", receiver.messagetext);
+	}
+	if ((msgctl(server_ID, IPC_RMID, NULL)) == -1){
+		perror("msgctl");
+		exit(1);
+	}
 
-	// printf("Message queue was destroyed");
-	// return 0;
+	printf("Message queue was destroyed");
+	return 0;
 
 }
 
