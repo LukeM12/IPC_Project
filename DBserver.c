@@ -18,9 +18,7 @@ struct my_msgbuf {
 	long mtype;
 	char messagetext[200];
 };
-//ftok generates a solid key to generate a key_t type system V IPC kwy
-// .suitable  for use with msgget(2),
-//        semget(2), or shmget(2).
+
 int main (void){
 	key_t user_key;
 	key_t editor_key;
@@ -29,23 +27,22 @@ int main (void){
 	struct my_msgbuf userBuffer;
 	struct my_msgbuf editorBuffer;
 	/* Configure the MSGQueue for the ATM Machine */
-//This is an outgoing message IPC
+    //This is an outgoing message IPC
 	if ((editor_key = ftok("DBserver.c", 'E')) == -1){
 		perror("ftok");
 		exit(1);
 	}
-		//For the editor communication IPC ' E' for EDITOR
+    //For the editor communication IPC ' E' for EDITOR
 	if ((EDITOR_ID = msgget(editor_key, 0644 | IPC_CREAT)) == -1){
 		printf("Editor msgget\n");
 		perror("msgget");
 		exit(1);
 	}
-/* Configure the MSQueue for the Database Editor */
+    /* Configure the MSQueue for the Database Editor */
 	if ((user_key = ftok("ATM.c", 'Q')) == -1){
 		perror("ftok");
 		exit(1);
 	}
-
 	// 	/* Get an instance of the user message queue */
 	if ((ATM_ID = msgget(user_key, 0644 | IPC_CREAT)) == -1){
 		perror("msgget");
@@ -58,7 +55,6 @@ int main (void){
 			perror("msgrcv");
 			exit(1);
 		}
-
 		/**
 		 * If the message was passed in, this is where the sanitation will go
 		 * To Fulfill the functional requirements of the assignment
@@ -69,18 +65,6 @@ int main (void){
 			int len = strlen(editorBuffer.messagetext);
 		   sprintf
 		    (editorBuffer.messagetext, userBuffer.messagetext);
-   // sendMsg.type = CLIENT_MSG_TYPE;
-   // sprintf
-   //  (sendMsg.text, "From CLIENT: Are you there?");
-   // msgFlags = 0;
-
-   // if (msgsnd(msgQID, &sendMsg, 
-   //   strlen(sendMsg.text)+1, msgFlags) < 0)
-   // {
-   // perror("CLIENT: msgsnd");
-   // exit(EXIT_FAILURE);
-   // }
-
 			if (editorBuffer.messagetext[len-1] == '\n') editorBuffer.messagetext[len-1] = '\0';
 
 			printf("Value Copied to Buffer Memory: %s\n",editorBuffer.messagetext);
@@ -95,7 +79,7 @@ int main (void){
 		}
 		//printf("ATM SAYS: \"%s\"\n", userBuffer.messagetext);
 	}
-
+    //Clean up and remove the IDs 
 	if ((msgctl(ATM_ID, IPC_RMID, NULL)) == -1)
 	{
 		perror("msgctl");
@@ -108,27 +92,5 @@ int main (void){
 		exit(1);
 	}
 	printf("Message queue was destroyed");
-	
 	return 0;
 }
-
-//sem referneces
-//i sem nt semctl(int semid, int semnum, int cmd, ...);
-// int msgget(key_t key, int msgflg);
-
-       // int sem_wait(sem_t *sem);
-//int msgsnd(int msqid, const void *msgp, size_t msgsz, int msgflg);
-
-
-       // int sem_trywait(sem_t *sem);
-
-      // int sem_timedwait(sem_t *sem, const struct timespec *abs_timeout);
-
-       // int semget(key_t key, int nsems, int semflg);
-// msgrcv(msqid, &pmb, sizeof(struct pirate_msgbuf) - sizeof(long), 2, 0);
-//cmd which tells msgctl() how to behave
-//Destructor
-/**
- * Author Luke Morrison
- * email : lukemo132@gmail.com
- */

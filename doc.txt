@@ -1,0 +1,22 @@
+
+//sem referneces
+//i sem nt semctl(int semid, int semnum, int cmd, ...);
+// int msgget(key_t key, int msgflg);
+
+       // int sem_wait(sem_t *sem);
+//int msgsnd(int msqid, const void *msgp, size_t msgsz, int msgflg);
+
+
+       // int sem_trywait(sem_t *sem);
+
+      // int sem_timedwait(sem_t *sem, const struct timespec *abs_timeout);
+
+       // int semget(key_t key, int nsems, int semflg);
+// msgrcv(msqid, &pmb, sizeof(struct pirate_msgbuf) - sizeof(long), 2, 0);
+//cmd which tells msgctl() how to behave
+//Destructor
+/**
+ * Author Luke Morrison
+ * email : lukemo132@gmail.com
+ */
+
