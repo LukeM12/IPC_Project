@@ -98,12 +98,24 @@ int main (void){
 }
 void ParseString(char *a){
     int count_fields = 0;
-    printf("Hello World %s\n", a);
     char* token = strtok(a, " ");
     while (token) {
         printf("token: %s\n", token);
+
+        if (count_fields == 0){
+            printf("This is the user account\n");
+        }
+        else if (count_fields == 1){
+            printf("This is the PIN\n");
+        }
+        else{ 
+            printf("Throw an error\n");
+            return ;
+        }
         token = strtok(NULL, " ");
         count_fields++;
+
     }
+    //now that we have the values we can send then to the server 
 }
 

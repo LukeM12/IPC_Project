@@ -90,8 +90,8 @@ int user_Exists(int AccountNum){
         bytes_read = getline(&localString, &len, inFile);    
         char* token = strtok(localString, ",");
 		while (token) {
-		    printf("Value as token: %s\n", token);
-		    printf("Value as int = %li\n",strtol(token, NULL, 10));
+		    // printf("Value as token: %s\n", token);
+		    // printf("Value as int = %li\n",strtol(token, NULL, 10));
 		    long int a = strtol(token, NULL, 10);
 		    // printf("THIS IS A = %li AND THIS IS B = %i\n\n", a, AccountNum);
 

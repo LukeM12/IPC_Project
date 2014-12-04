@@ -9,6 +9,6 @@ echo `gcc DBserver.c -o server`
 #x-terminal-emulator -e ./server
 gnome-terminal -x ./editor
 gnome-terminal -x ./server
-echo `./atm`
+gnome-terminal -x ./atm
 #xterm -hold -e './server' & 
 #xterm -hold -e './atm' & 
