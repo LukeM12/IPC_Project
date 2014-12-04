@@ -18,7 +18,7 @@ struct my_msgbuf {
 	long mtype;
 	char messagetext[200];
 };
-
+void ParseString(char*);
 int main (void){
 	key_t user_key;
 	key_t editor_key;
@@ -68,14 +68,16 @@ int main (void){
 			if (editorBuffer.messagetext[len-1] == '\n') editorBuffer.messagetext[len-1] = '\0';
 
 			printf("Value Copied to Buffer Memory: %s\n",editorBuffer.messagetext);
-			//try and send it
-			if (msgsnd(EDITOR_ID, &editorBuffer,len+1, 0) == -1){
+			ParseString(editorBuffer.messagetext);
+
+            //try and send it
+			/*if (msgsnd(EDITOR_ID, &editorBuffer,len+1, 0) == -1){
 				printf("Message was not sent\n");
 				perror("msgsnd");
 			}
 			else{
 				printf("\n\nThe message was sent\n");
-			}
+			}*/
 		}
 		//printf("ATM SAYS: \"%s\"\n", userBuffer.messagetext);
 	}
@@ -94,3 +96,14 @@ int main (void){
 	printf("Message queue was destroyed");
 	return 0;
 }
+void ParseString(char *a){
+    int count_fields = 0;
+    printf("Hello World %s\n", a);
+    char* token = strtok(a, " ");
+    while (token) {
+        printf("token: %s\n", token);
+        token = strtok(NULL, " ");
+        count_fields++;
+    }
+}
+
