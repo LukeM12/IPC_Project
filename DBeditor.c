@@ -14,6 +14,7 @@ struct my_msgbuf {
 	char messagetext[200];
 };
 void parseInputFile();
+void ParseString(char *);
 int test_user_Exists();
 int main(int argc, const char *argv[]){
 	key_t server_key;
@@ -31,26 +32,29 @@ int main(int argc, const char *argv[]){
 	if ((server_ID = msgget(server_key, 0644 | IPC_CREAT)) == -1){
 		perror("msgget");
 		exit(1);
-	}test_user_Exists();
-	// printf("The Database Listener is awake and waiting for Database Input\n=======================\n");
-	// /* Start the Database Data Miner  AKA DB edtiro*/
-	// for(;;) { 
-	// 	if (msgrcv(server_ID, &receiver, sizeof(receiver.messagetext), 0, 0) == -1) {
-	// 		perror("msgrcv");
-	// 		exit(1);
-	// 	}
+	}
+	printf("The Database Listener is awake and waiting for Database Input\n=======================\n");
+	/* Start the Database Data Miner  AKA DB edtiro*/
+	for(;;) { 
+		if (msgrcv(server_ID, &receiver, sizeof(receiver.messagetext), 0, 0) == -1) {
+			perror("msgrcv");
+			exit(1);
+		}
+		else{
+			ParseString(receiver.messagetext);
+		}
+		ParseString(receiver.messagetext);
+		printf("DBserver SAYS: \"%s\"\n", receiver.messagetext);
+	}
 
-	// 	printf("DBserver SAYS: \"%s\"\n", receiver.messagetext);
-	// }
 
+	if ((msgctl(server_ID, IPC_RMID, NULL)) == -1){
+		perror("msgctl");
+		exit(1);
+	}
 
-	// if ((msgctl(server_ID, IPC_RMID, NULL)) == -1){
-	// 	perror("msgctl");
-	// 	exit(1);
-	// }
-
-	// printf("Message queue was destroyed");
-	// return 0;
+	printf("Message queue was destroyed");
+	return 0;
 
 }
 /**
@@ -83,7 +87,8 @@ void parseInputFile(){
  * @param: the User Account Number
  * return: If the user exists in the database or not
  */
-int user_Exists(int AccountNum, int PIN){
+int user_Exists((int AccountNum, int PIN){
+
     char *localString;
     size_t len = 0;
     int bytes_read;
@@ -105,7 +110,8 @@ int user_Exists(int AccountNum, int PIN){
 		    	token = strtok(NULL, ",");
 		    	long int a = strtol(token, NULL, 10);
 		    	if (a == PIN){
-		    		return 1;
+		    		printf("We have a winner, sir!\n")
+;		    		return 1;
 		    	}
 		    }
 
@@ -129,4 +135,26 @@ int test_user_Exists(){
 		printf("Test User Exists Failed!\n");
 	}
      return 0;
+}
+
+void ParseString(char *a){
+    int count_fields = 0;
+    int PIN;
+    int Account;
+    char* token = strtok(a, " ");
+    while (token) {
+        if (count_fields == 0){
+            Account = atoi(token);
+        }
+        else if (count_fields == 1){
+        	PIN = atoi(token);
+        }
+        else{ 
+            printf("Throw an error\n");
+            return ;
+        }
+        token = strtok(NULL, " ");
+        count_fields++;
+    }
+	user_Exists(Account, PIN);
 }

@@ -18,7 +18,7 @@ struct my_msgbuf {
 	long mtype;
 	char messagetext[200];
 };
-void ParseString(char*);
+// void ParseString(char*);
 int main (void){
 	key_t user_key;
 	key_t editor_key;
@@ -95,27 +95,5 @@ int main (void){
 	}
 	printf("Message queue was destroyed");
 	return 0;
-}
-void ParseString(char *a){
-    int count_fields = 0;
-    char* token = strtok(a, " ");
-    while (token) {
-        printf("token: %s\n", token);
-
-        if (count_fields == 0){
-            printf("This is the user account\n");
-        }
-        else if (count_fields == 1){
-            printf("This is the PIN\n");
-        }
-        else{ 
-            printf("Throw an error\n");
-            return ;
-        }
-        token = strtok(NULL, " ");
-        count_fields++;
-
-    }
-    //now that we have the values we can send then to the server 
 }
 
