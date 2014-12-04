@@ -67,17 +67,17 @@ int main (void){
 		    (editorBuffer.messagetext, userBuffer.messagetext);
 			if (editorBuffer.messagetext[len-1] == '\n') editorBuffer.messagetext[len-1] = '\0';
 
-			printf("Value Copied to Buffer Memory: %s\n",editorBuffer.messagetext);
-			ParseString(editorBuffer.messagetext);
+			printf("Value Received from ATM: %s\nSending to Editor\n",editorBuffer.messagetext);
+			//ParseString(editorBuffer.messagetext);
 
             //try and send it
-			/*if (msgsnd(EDITOR_ID, &editorBuffer,len+1, 0) == -1){
+			if (msgsnd(EDITOR_ID, &editorBuffer,len+1, 0) == -1){
 				printf("Message was not sent\n");
 				perror("msgsnd");
 			}
 			else{
-				printf("\n\nThe message was sent\n");
-			}*/
+				printf("\n\nEditor Received the Message\n");
+			}
 		}
 		//printf("ATM SAYS: \"%s\"\n", userBuffer.messagetext);
 	}
