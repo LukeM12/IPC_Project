@@ -17,7 +17,7 @@
 int LOGIN_COUNT = 0;
 time_t rawtime;
 struct tm * timeinfo;
-struct my_msgbuf ExecuteOperation(struct my_msgbuf , int , char *);
+void ExecuteOperation(struct my_msgbuf , int , char *);
 int main(int argc, const char *argv[]){
 	key_t server_key;
 	int server_ID;
@@ -39,6 +39,7 @@ int main(int argc, const char *argv[]){
 	while(1){
 		Login(serverBuffer, server_ID); //Only when we log in, can we enter the shell
 		Enter_Shell(server_ID, serverBuffer); //And only when they log out, can we leave the shell
+		LOGIN_COUNT = 0;
 	}
 	if ((msgctl(server_ID, IPC_RMID, NULL)) == -1)
 	{
@@ -58,23 +59,19 @@ void Enter_Shell(int server_ID, struct my_msgbuf serverBuffer){
 
 	printf("\n\n\nUser Logged in at %s \n\n",asctime (timeinfo) );
 	printf("To Withdraw Money type 'Withdraw X' where X is the amount of money\n");
-	printf("To Deposit Money type 'Deposit' where X is the amount of money\n");
+	printf("To Deposit Money type 'Deposit Y' where Y is the amount of money\n");
 	char input[200];
 	while(LOGIN_COUNT < 3){
 		fgets(input, sizeof(input), stdin);
 		int len = strlen(input);
 		if (input[len-1] == '\n') input[len-1] = '\0';
-		serverBuffer = ExecuteOperation(serverBuffer, server_ID, input);
+		ExecuteOperation(serverBuffer, server_ID, input);
 	}
 }
 /**
  * Description: Take in an operation and execute it
  */
-struct my_msgbuf ExecuteOperation(struct my_msgbuf serverBuffer, int server_ID, char *inString){
-	if (server_ID == 0 ){
-		return serverBuffer;
-	}	
-	printf("Your string = %s\n", inString);
+void ExecuteOperation(struct my_msgbuf serverBuffer, int server_ID, char *inString){
 	char copy[200];
 	strcpy( copy, inString);
 	char* token = strtok(inString, " ");
@@ -86,18 +83,39 @@ struct my_msgbuf ExecuteOperation(struct my_msgbuf serverBuffer, int server_ID, 
 		if (strcmp(token, "Withdraw") == 0){
 			token = strtok(NULL, " ");
 			value = atof(token);
-			printf("token = %f\n", value);
 			strcpy(serverBuffer.messagetext, copy );
 			sendMessage(serverBuffer, server_ID);
+			LOGIN_COUNT = 3;
+			printf("Logging out\n");
+			return;
 
 		}
 	    /* If it is a Deposit operation, then process it */
-		if (strcmp(token, "Deposit") == 0)
+		else if (strcmp(token, "Deposit") == 0)
 		{
 			token = strtok(NULL, " ");
 			value = atof(token);
-			printf("token = %f\n", value);
-			//Call Server to Deposit
+			strcpy(serverBuffer.messagetext, copy );
+			sendMessage(serverBuffer, server_ID);
+			LOGIN_COUNT = 3;
+			printf("Logging out\n");	
+			return;
+		}
+			    /* If it is a Deposit operation, then process it */
+		else if (strcmp(token, "Request") == 0)
+		{
+			token = strtok(NULL, " ");
+			value = atof(token);
+			strcpy(serverBuffer.messagetext, copy );
+			sendMessage(serverBuffer, server_ID);
+			LOGIN_COUNT = 3;
+			printf("Logging out\n");
+			return;
+
+		}
+		else {
+			printf("Message was not sent\n Please check your syntax and try again\n");
+			return;
 		}
 	    token = strtok(NULL, " ");
 	    count_fields++;
@@ -119,7 +137,8 @@ void sendMessage(struct my_msgbuf serverBuffer, int server_ID){
 			exit(1);
 		}
 		else{
-			printf("Your message is indeed this  %s\n", serverBuffer.messagetext);
+			printf("%s\n", serverBuffer.messagetext);
+			return;
 		}
 	}
 

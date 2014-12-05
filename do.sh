@@ -7,5 +7,7 @@ echo `gcc ATM.c -w -lm -o atm`
 echo `gcc DBeditor.c -lm -w  -o editor`
 echo `gcc DBserver.c -lm -w -o server`
 #x-terminal-emulator -e ./server
+gnome-terminal -x ./editor
+gnome-terminal -x ./server
+gnome-terminal -x ./atm
 #xterm -hold -e './server' & 
-#xterm -hold -e './atm' & 

@@ -50,6 +50,8 @@ int main (void){
 	printf("Server is connected to Database and waiting for User Input\n==\n");
 	editorBuffer.mtype = 1; /* we don't really care in this case */
 	for(;;) { 
+		memset(userBuffer.messagetext, '\0', sizeof(userBuffer.messagetext));
+		memset(editorBuffer.messagetext, '\0', sizeof(editorBuffer.messagetext));
 		if (msgrcv(ATM_ID, &userBuffer, sizeof(userBuffer.messagetext), 0, 0) == -1) {
 			perror("msgrcv");
 			exit(1);

@@ -17,6 +17,7 @@ struct my_msgbuf {
 };
 char *ExecuteOperation(struct my_msgbuf,int );
 char *Withdraw(char *);
+char *Request(char *);
 char *Deposit(char *);
 void parseInputFile();
 int Login(char *);
@@ -113,9 +114,8 @@ void Enter_Login(struct my_msgbuf receiver, int server_ID){
 		}
 		else {
 			//Process the request. Try and log in 
+			printf("DBserver SAYS: \"%s\"\n", receiver.messagetext);
 			int len = strlen(receiver.messagetext);
-
-			printf("WE ARE IN THE SHELL\n");
 			char *msg;
 			msg = ExecuteOperation(receiver, server_ID);
 			//Now what we want to do is paste that and send it back to the user 
@@ -128,10 +128,13 @@ void Enter_Login(struct my_msgbuf receiver, int server_ID){
 				perror("msgsnd");
 			}
 			else {
-				printf("Editor tries to send message back to server\n");
+				printf("Leaving the Shell. operating Complete\n");
+				LOGIN_BIT = 0;
+				return;
+
 			} 
 		}
-		printf("DBserver SAYS: \"%s\"\n", receiver.messagetext);
+
 	}
 }
 /**
@@ -149,23 +152,29 @@ char *ExecuteOperation(struct my_msgbuf receiver, int server_ID){
 	char *msg;
 	char ret[100];
 	while (token) {
-		printf("We are in the main lop");
-	    //printf("token: %s\n", token);
 		if (strcmp(token, "Withdraw") == 0){
+			printf("Withdrawing funds");
 			token = strtok(NULL, " ");
 			value = atof(token);
-			printf("token = %f\n", value);
 			strcpy(receiver.messagetext, copy );	
 			msg = Withdraw(token);
 			strcpy(ret, msg);
 		}
-		if (strcmp(token, "Deposit") == 0)
+		else if (strcmp(token, "Deposit") == 0)
+		{
+			printf("Depositing funds");
+			token = strtok(NULL, " ");
+			value = atof(token);
+			strcpy(receiver.messagetext, copy );	
+			msg = Deposit(token);
+			strcpy(ret, msg);
+		}
+		if (strcmp(token, "Request") == 0)
 		{
 			token = strtok(NULL, " ");
 			value = atof(token);
-			printf("token = %f\n", value);
 			strcpy(receiver.messagetext, copy );	
-			msg = Deposit(token);
+			msg = Request(token);
 			strcpy(ret, msg);
 		}
 	    token = strtok(NULL, " ");
@@ -232,7 +241,6 @@ char* Withdraw(char * val_asString){
 		    if (count_fields==0 && inputAccountNum == AccountNum){
 		    	//clear out our memory 
 		    	memset(copy, '\0', sizeof(copy));
-
 		    	//grab the user ID, put it in the buffer
 		    	strcat(copy, token);
 		    	strcat(copy, ",");
@@ -240,12 +248,10 @@ char* Withdraw(char * val_asString){
 		    	token = strtok(NULL, ",");
 		    	strcat(copy, token);
 		    	strcat(copy, ",");
-
 		    	//Grab The Balance
 		    	token = strtok(NULL, ",");
 		    	float DBval = atof(token);
 		    	float effective = DBval;
-
 		    	if (DBval < val){
 		    		effective = DBval;
 		    		sprintf(ret, "Funds Not Available. Balance=%f", effective);
@@ -254,7 +260,6 @@ char* Withdraw(char * val_asString){
 		    	else {
 		    		effective = DBval - val;
 		    		sprintf(ret, "Funds WithDrawn. Balance=%f", effective);
-
 		    	}
 		    	char dummy[100];
 		    	//printf("In the database it is %s DBval=%f\nval=%f\neffective=%f\n" , copy, DBval, val, effective);
@@ -264,8 +269,7 @@ char* Withdraw(char * val_asString){
 					processed_User_Flag = 1;
 					//To not rewrite this line afterwards
 					FIRST_PROCESS = 1;
-				}
-				
+				}			
 		    }
 		    else {
 		    	/* If it not the user just write out to the second file */
@@ -292,13 +296,13 @@ char* Withdraw(char * val_asString){
 	fclose(oldDB);
     int status = remove("database.txt");
 
-	if( status == 0 )
-	  printf(" file deleted successfully.\n");
-	else
-	{
-	  printf("Unable to delete the file\n");
-	  perror("Error");
-	}
+	// if( status == 0 )
+	//   printf(" file deleted successfully.\n");
+	// else
+	// {
+	//   printf("Unable to delete the file\n");
+	//   perror("Error");
+	// }
 	/* Clean up the files */
    char oldname[] = "database2.txt";
    char newname[] = "database.txt";
@@ -315,7 +319,46 @@ char* Withdraw(char * val_asString){
    }
 	return ret;
 }
+/** 
+ * Description : Verify if user Exists under this PIN and Account Number
+ * @param Account Num - the user Account number. This will be cached locally upon login
+ * @param PIN - authenticates the user based on content of database.txt
+ * return: 1 if success, 0 of not successful
+ */
+char* Request(char* token){
+    char *localString;
+    size_t len = 0;
+    int bytes_read;
+    char *token2;
+    char ret[100];
+    const char s[2] = ",";
+    FILE* inFile = fopen("database.txt","r");
+    float count_entries = 0;
+    float count_fields = 0;
+    /* Read the Entire File */
+    while (bytes_read != -1) { 
+        bytes_read = getline(&localString, &len, inFile);    
+        char* token = strtok(localString, ",");
+        /* Parse each row */
+		while (token) {
+			/* Get Account Number */
+		    long int a = strtol(token, NULL, 10);
+		    if (count_fields==0 && a == Login_Cookie){
+		    	token = strtok(NULL, ",");
 
+	    		token = strtok(NULL, ",");
+	    		sprintf(ret, "%.2f", token);
+	    		return 1;
+
+		    }
+		    token = strtok(NULL, ",");
+		    count_fields++;
+		}
+	count_fields = 0;
+	count_entries++;
+	}
+	return 0;
+}
 /**
  * Description : Pass in an amount in the form of a string to withdraw from the user 
  * @param val_asString: the value that is being passe in
@@ -390,7 +433,6 @@ char* Deposit(char * val_asString){
 				sprintf(ret, "%.2f Deposited. Balance=%.2f", val, effective);
 
 		    	char dummy[100];
-		    	//printf("In the database it is %s DBval=%f\nval=%f\neffective=%f\n" , copy, DBval, val, effective);
 		    	if (processed_User_Flag == 0){
 					fprintf(newDB, "%s%.2f\n", copy,effective);
 					//To not have to loop this each time
@@ -423,20 +465,26 @@ char* Deposit(char * val_asString){
 	}
 	fclose(newDB);
 	fclose(oldDB);
-    int status = remove("database.txt");
-
-	if( status == 0 )
-	  printf(" file deleted successfully.\n");
-	else
-	{
-	  printf("Unable to delete the file\n");
-	  perror("Error");
-	}
-	/* Clean up the files */
+		/* Clean up the files */
    char oldname[] = "database2.txt";
    char newname[] = "database.txt";
    
    int test = rename(oldname, newname);
+
+ //    int status = remove("database.txt");
+
+	// if( status == 0 )
+	//   printf(" file deleted successfully.\n");
+	// else
+	// {
+	//   printf("Unable to delete the file\n");
+	//   perror("Error");
+	// }
+	/* Clean up the files */
+   // char oldname[] = "database2.txt";
+   // char newname[] = "database.txt";
+   
+   // int test = rename(oldname, newname);
 
    if(test == 0) 
    {
@@ -479,7 +527,7 @@ int Login(char *a){
         token = strtok(NULL, " ");
         count_fields++;
     }
-	return user_Exists(Account, PIN);
+	return user_Exists(Account, PIN-1);
 }
 /** 
  * Description : Verify if user Exists under this PIN and Account Number
@@ -513,12 +561,14 @@ int user_Exists(int AccountNum, int PIN){
 		    		printf("We have a winner, sir!\n");
 		    		/* Set Cookie */
 		    		Login_Cookie = AccountNum;
+	    			fclose(inFile);
 		    		return 1;
 		    	}
 		    }
 		    token = strtok(NULL, ",");
 		    count_fields++;
 		}
+	fclose(inFile);
 	count_fields = 0;
 	count_entries++;
 	}
@@ -560,4 +610,5 @@ void parseInputFile(){
 		    count_fields++;
 		}
      }
+ 	fclose(inFile);
 }
