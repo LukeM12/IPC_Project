@@ -16,7 +16,7 @@ struct my_msgbuf {
 	char messagetext[200];
 };
 // void ExecuteOperation(struct , int );
-
+char *Withdraw(char *);
 void parseInputFile();
 int Login(char *);
 int test_user_Exists();
@@ -38,61 +38,181 @@ int main(int argc, const char *argv[]){
 		perror("msgget");
 		exit(1);
 	}
+	Login_Cookie = 1;
+	char * a = Withdraw("2.5");
+	printf("a = %s", a);
+	// printf("The Database Listener is awake and waiting for Database Input\n=======================\n");
+	// /* Start the Database Data Miner  AKA DB editor*/
+	// for(;;) { 
+	// 	if (msgrcv(server_ID, &receiver, sizeof(receiver.messagetext), 0, 0) == -1) {
+	// 		perror("msgrcv");
+	// 		exit(1);
+	// 	}
 
-	printf("The Database Listener is awake and waiting for Database Input\n=======================\n");
-	/* Start the Database Data Miner  AKA DB editor*/
-	for(;;) { 
-		if (msgrcv(server_ID, &receiver, sizeof(receiver.messagetext), 0, 0) == -1) {
-			perror("msgrcv");
-			exit(1);
-		}
+	// 	else {
+	// 		//Process the request. Try and log in 
 
-		else {
-			//Process the request. Try and log in 
+	// 		int login_result = Login(receiver.messagetext);
+	// 		int len = strlen(receiver.messagetext);
+	// 		printf("We have tried to log in\n");
+	// 		// then we send back the reply
+	// 		if (login_result > 0 ){
+	// 			sprintf(receiver.messagetext, "OK");
+	// 			//Have a global flag here that goes and leaves logon mode 
+	// 			LOGIN_BIT = 1;
+	// 		}
+	// 		else if (login_result == 0) {
+	// 			sprintf(receiver.messagetext, "NOT OK");
 
-			int login_result = Login(receiver.messagetext);
-			int len = strlen(receiver.messagetext);
-			printf("We have tried to log in\n");
-			// then we send back the reply
-			if (login_result > 0 ){
-				sprintf(receiver.messagetext, "OK");
-				//Have a global flag here that goes and leaves logon mode 
-				LOGIN_BIT = 1;
-			}
-			else if (login_result == 0) {
-				sprintf(receiver.messagetext, "NOT OK");
+	// 		}
+	// 		else {
+	// 			strcpy(receiver.messagetext, "ERROR: NULL STRING");
+	// 		}
+	// 		/* Send the Result back to the DB server */
+	// 		len = strlen(receiver.messagetext); // We meed to reset our length after 
+	// 		if (msgsnd(server_ID, &receiver,len+1, 0) == -1){
+	// 			printf("Message was not sent\n");
+	// 			perror("msgsnd");
+	// 		}
+	// 		else {
+	// 			printf("Editor tries to send message back to server\n");
+	// 			//Leave Login Mode if User authenticated
+	// 			if (LOGIN_BIT > 0){
+	// 				printf("Going in\n");
+	// 				Enter_Login(receiver, server_ID);
+	// 			}
+	// 			//The message was ok? Then go to the shell
+	// 		}
+	// 	//Now we pipe back to the other process to reply 
+	// 	}
 
-			}
-			else {
-				strcpy(receiver.messagetext, "ERROR: NULL STRING");
-			}
-			/* Send the Result back to the DB server */
-			len = strlen(receiver.messagetext); // We meed to reset our length after 
-			if (msgsnd(server_ID, &receiver,len+1, 0) == -1){
-				printf("Message was not sent\n");
-				perror("msgsnd");
-			}
-			else {
-				printf("Editor tries to send message back to server\n");
-				//Leave Login Mode if User authenticated
-				if (LOGIN_BIT > 0){
-					printf("Going in\n");
-					Enter_Login(receiver, server_ID);
-				}
-				//The message was ok? Then go to the shell
-			}
-		//Now we pipe back to the other process to reply 
-		}
-
-		printf("DBserver SAYS: \"%s\"\n", receiver.messagetext);
-	}
-	if ((msgctl(server_ID, IPC_RMID, NULL)) == -1){
-		perror("msgctl");
-		exit(1);
-	}
-	printf("Message queue was destroyed");
+	// 	printf("DBserver SAYS: \"%s\"\n", receiver.messagetext);
+	// }
+	// if ((msgctl(server_ID, IPC_RMID, NULL)) == -1){
+	// 	perror("msgctl");
+	// 	exit(1);
+	// }
+	// printf("Message queue was destroyed");
 	return 0;
+}
 
+/**
+ * Pass in an amount in the form of a string to withdraw from the user 
+ * @param val_asString: the value that is being passe in
+ */
+char* Withdraw(char * val_asString){
+	float val = atof(val_asString);
+	printf("token = %f\n", val);
+	int AccountNum = Login_Cookie;
+	printf("Incoming Val = %f", val);
+    char *localString;
+    size_t len = 0;
+    int bytes_read;
+    char *token2;
+    const char s[2] = ",";
+    char copy[100];
+    char backup_String[100];
+   	//This will be the message to send back to the ATM
+    char ret[100];
+    memset(ret, '\0', sizeof(ret));
+
+    /** 
+    * File Weaving technique. Open 2 files. Write updates file to 2nd one. Delete 1st one, and then 
+    * rename 2nd one to have name as 1st one. OS inherently protects filelock, and the benefit is 
+    * protection against memory overflow 
+    **/
+    FILE* oldDB = fopen("database.txt","r");
+    if (oldDB == NULL){
+    	printf("ERROR: FILE OPEN\n");
+    	exit(1);
+    }
+	FILE* newDB = fopen("database2.txt","w");
+    if (newDB == NULL){
+		printf("ERROR: FILE OPEN\n");
+		exit(1);
+    }
+    /* Our counters for the fileLooping */
+    int count_entries = 0;
+    int count_fields = 0;
+
+    /* Avoid tokenizing for unimportant entries */
+    int processed_User_Flag = 0;
+    int FIRST_PROCESS = 0;
+    /* Read the entire file */
+    while (bytes_read != -1) { 
+    	int been_written = 0;
+        bytes_read = getline(&localString, &len, oldDB);
+        memset(backup_String, '\0', sizeof(backup_String));
+        strcpy(backup_String, localString);    
+        char* token = strtok(localString, ",");
+
+
+        /* Parse the string */
+		while (token && ! processed_User_Flag ) {
+		    long int inputAccountNum = strtol(token, NULL, 10);
+		    /* The user already autheticated, we do not need to worry about the PIN again */
+		    if (count_fields==0 && inputAccountNum == AccountNum){
+		    	//clear out our memory 
+		    	memset(copy, '\0', sizeof(copy));
+
+		    	//grab the user ID, put it in the buffer
+		    	strcat(copy, token);
+		    	strcat(copy, ",");
+		    	//Grab the PIN, append to buffer
+		    	token = strtok(NULL, ",");
+		    	strcat(copy, token);
+		    	strcat(copy, ",");
+
+		    	//Grab The Balance
+		    	token = strtok(NULL, ",");
+		    	float DBval = atof(token);
+		    	float effective = DBval;
+
+		    	if (DBval < val){
+		    		effective = DBval;
+		    		sprintf(ret, "Funds Not Available. Balance=%f", effective);
+
+		    	} 
+		    	else {
+		    		effective = DBval - val;
+		    		sprintf(ret, "Funds WithDrawn. Balance=%f", effective);
+
+		    	}
+		    	char dummy[100];
+		    	//printf("In the database it is %s DBval=%f\nval=%f\neffective=%f\n" , copy, DBval, val, effective);
+		    	if (processed_User_Flag == 0){
+					fprintf(newDB, "%s%.2f\n", copy,effective);
+					//To not have to loop this each time
+					processed_User_Flag = 1;
+					//To not rewrite this line afterwards
+					FIRST_PROCESS = 1;
+				}
+				
+		    }
+		    else {
+		    	/* If it not the user just write out to the second file */
+				// fprintf(newDB, "%s", backup_String);
+		    }
+		    token = strtok(NULL, ",");
+		    count_fields++;
+		}
+	//We have read the whole string just output the rest of the DB
+	if (processed_User_Flag > 0 && FIRST_PROCESS == 0){
+		fprintf(newDB, "%s", backup_String);
+	}
+	//Flips the bit that tells us - we already wrote the current user
+	if (FIRST_PROCESS == 1) {
+		FIRST_PROCESS = 0;
+	}
+
+	count_fields = 0;
+	count_entries++;
+	}
+	fclose(newDB);
+	fclose(oldDB);
+
+
+	return ret;
 }
 /**
  * Description : The log in method to check to see if the user exists
@@ -247,115 +367,7 @@ void ExecuteOperation(struct my_msgbuf receiver, int server_ID){
 	}
 	return 1;
 }
-/**
- * Pass in an amount in the form of a string to withdraw from the user 
- * @param val_asString: the value that is being passe in
- */
-void Withdraw(char * val_asString){
-	float val = atof(val_asString);
-	printf("token = %f\n", val);
-	int AccountNum = Login_Cookie;
-	printf("Incoming Val = %f", val);
-    char *localString;
-    size_t len = 0;
-    int bytes_read;
-    char *token2;
-    const char s[2] = ",";
-    char copy[100];
-    char backup_String[100];
 
-    /** 
-    * File Weaving technique. Open 2 files. Write updates file to 2nd one. Delete 1st one, and then 
-    * rename 2nd one to have name as 1st one. OS inherently protects filelock, and the benefit is 
-    * protection against memory overflow 
-    **/
-    FILE* oldDB = fopen("database.txt","r");
-    if (oldDB == NULL){
-    	printf("ERROR: FILE OPEN\n");
-    	exit(1);
-    }
-	FILE* newDB = fopen("database2.txt","w");
-    if (newDB == NULL){
-		printf("ERROR: FILE OPEN\n");
-		exit(1);
-    }
-    /* Our counters for the fileLooping */
-    int count_entries = 0;
-    int count_fields = 0;
-
-    /* Avoid tokenizing for unimportant entries */
-    int processed_User_Flag = 0;
-    int FIRST_PROCESS = 0;
-    /* Read the entire file */
-    while (bytes_read != -1) { 
-    	int been_written = 0;
-        bytes_read = getline(&localString, &len, oldDB);
-        memset(backup_String, '\0', sizeof(backup_String));
-        strcpy(backup_String, localString);    
-        char* token = strtok(localString, ",");
-
-
-        /* Parse the string */
-		while (token && ! processed_User_Flag ) {
-		    long int inputAccountNum = strtol(token, NULL, 10);
-		    /* The user already autheticated, we do not need to worry about the PIN again */
-		    if (count_fields==0 && inputAccountNum == AccountNum){
-		    	//clear out our memory 
-		    	memset(copy, '\0', sizeof(copy));
-
-		    	//grab the user ID, put it in the buffer
-		    	strcat(copy, token);
-		    	strcat(copy, ",");
-		    	//Grab the PIN, append to buffer
-		    	token = strtok(NULL, ",");
-		    	strcat(copy, token);
-		    	strcat(copy, ",");
-
-		    	//Grab The Balance
-		    	token = strtok(NULL, ",");
-		    	float DBval = atof(token);
-		    	float effective = DBval;
-
-		    	if (DBval < val){
-		    		effective = DBval;
-
-		    	} 
-		    	else {
-		    		effective = DBval - val;
-		    	}
-		    	char dummy[100];
-		    	//printf("In the database it is %s DBval=%f\nval=%f\neffective=%f\n" , copy, DBval, val, effective);
-		    	if (processed_User_Flag == 0){
-					fprintf(newDB, "%s%.2f\n", copy,effective);
-					//To not have to loop this each time
-					processed_User_Flag = 1;
-					//To not rewrite this line afterwards
-					FIRST_PROCESS = 1;
-				}
-				
-		    }
-		    else {
-		    	/* If it not the user just write out to the second file */
-				// fprintf(newDB, "%s", backup_String);
-		    }
-		    token = strtok(NULL, ",");
-		    count_fields++;
-		}
-	//We have read the whole string just output the rest of the DB
-	if (processed_User_Flag > 0 && FIRST_PROCESS == 0){
-		fprintf(newDB, "%s", backup_String);
-	}
-	//Flips the bit that tells us - we already wrote the current user
-	if (FIRST_PROCESS == 1) {
-		FIRST_PROCESS = 0;
-	}
-
-	count_fields = 0;
-	count_entries++;
-	}
-	fclose(newDB);
-	fclose(oldDB);
-}
 /**
  * Description : This checks to see if the end user exists  
  * @param: the User Account Number
