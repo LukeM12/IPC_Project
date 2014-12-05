@@ -60,7 +60,7 @@ int main(int argc, const char *argv[]){
 
 		if (serverBuffer.messagetext[len-1] == '\n') serverBuffer.messagetext[len-1] = '\0';
 
-		printf("ATM sending = %s\nLength= %i\n",serverBuffer.messagetext, len);
+		printf("ATM sending = %s",serverBuffer.messagetext);
 		len = strlen(serverBuffer.messagetext);
 		if (msgsnd(server_ID, &serverBuffer,len+1, 0) == -1){
 			perror("msgsnd");

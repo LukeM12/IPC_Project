@@ -45,11 +45,14 @@ int main(int argc, const char *argv[]){
 			int login_result = Login(receiver.messagetext);
 			int len = strlen(receiver.messagetext);
 			printf("We have tried to log in\n");
+			//Now that we have the result, we can just clear the queue to send back the result
+			memset(receiver.messagetext, '\0' ,sizeof(receiver.messagetext));
 			// then we send back the reply
 			if (login_result > 0 ){
 				// pipe back that it did not work
 				// pipe it back
-				strcpy(receiver.messagetext, "OK");
+
+				strcpy(receiver.messagetext, "OK\n");
 				// if (msgsnd(server_ID, &receiver,len+1, 0) == -1){
 				// 	printf("Message was not sent\n");
 				// 	perror("msgsnd");
@@ -60,12 +63,11 @@ int main(int argc, const char *argv[]){
 				// }
 			}
 			else if (login_result == 0) {
-				strcpy(receiver.messagetext, "NOT OK");
-
+				strcpy(receiver.messagetext, "NOT OK\n");
 			}
 
 			else{
-				strcpy(receiver.messagetext, "ERROR: NULL STRING");
+				strcpy(receiver.messagetext, "ERROR: NULL STRING\n");
 			}
 			/* Send the Result back to the DB server */
 			if (msgsnd(server_ID, &receiver,len+1, 0) == -1){
@@ -73,6 +75,7 @@ int main(int argc, const char *argv[]){
 				perror("msgsnd");
 			}
 			else {
+				printf("DBserver SAYS:yeyeyeye \"%s\"\n", receiver.messagetext);
 				printf("Editor tries to send message back to server\n");
 			}
 		//Now we pipe back to the other process to reply 
@@ -84,7 +87,7 @@ int main(int argc, const char *argv[]){
 		perror("msgctl");
 		exit(1);
 	}
-	printf("Message queue was destroyed");
+	printf("Message queue was destroyed\n");
 	return 0;
 
 }
