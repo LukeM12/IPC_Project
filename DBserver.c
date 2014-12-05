@@ -75,28 +75,31 @@ int main (void){
 				perror("msgsnd");
 			}
 			else{
-				printf("\n\nEditor Received the Message\n");
+				printf("Editor Received the Message\n");
 				//Ok so this is the interesting part. We will wait for a reply from the DB editor. If there is no reply
 				//Then we time out first.
 				len = strlen(editorBuffer.messagetext);
-				// if (msgrcv(EDITOR_ID, &editorBuffer, sizeof(editorBuffer.messagetext), 0, 0) == -1) {
-				// 	perror("msgrcv");
-				// 	exit(1);
-				// }
-				// //And give that message back to the user. Take action as necessary
-				// else {
-				// 	printf("Login = %s", editorBuffer.messagetext);
-				// 	//try and send it to the user
-				// 	//Could I just add this element to their queue, or would that screw something up?
-				// 	//i.e. send the editor buffer
-				// 	//(msgsnd(ATM_ID, &editorBuffer,len+1, 0) == -1){
-				// 	// De-comment below to send back to the user 			
-				// 	// strcpy(userBuffer.messagetext editorBuffer.messagetext);
-				// 	// if (msgsnd(ATM_ID, &userBuffer,len+1, 0) == -1){
-				// 	// 	printf("Message was not sent\n");
-				// 	// 	perror("msgsnd");
-				// 	// }
-				// }
+
+				//Right here is where it is fucking up
+				//It wants to get something back from the received
+				if (msgrcv(EDITOR_ID, &editorBuffer, sizeof(editorBuffer.messagetext), 0, 0) == -1) {
+					perror("msgrcv");
+					exit(1);
+				}
+				//And give that message back to the user. Take action as necessary
+				else {
+					printf("Login = %s\n", editorBuffer.messagetext);
+					//try and send it to the user
+					//Could I just add this element to their queue, or would that screw something up?
+					//i.e. send the editor buffer
+					// (msgsnd(ATM_ID, &editorBuffer,len+1, 0) == -1){
+					// De-comment below to send back to the user 			
+					// strcpy(userBuffer.messagetext editorBuffer.messagetext);
+					// if (msgsnd(ATM_ID, &userBuffer,len+1, 0) == -1){
+					// 	printf("Message was not sent\n");
+					// 	perror("msgsnd");
+					// }
+				}
 
 			}
 		}

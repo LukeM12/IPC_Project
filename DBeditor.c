@@ -44,9 +44,9 @@ int main(int argc, const char *argv[]){
 			//Process the request. Try and log in 
 			int var = Login(receiver.messagetext);
 			int len = strlen(receiver.messagetext);
-			printf("We have tried to log in");
+			printf("We have tried to log in\n");
 			//then we send back the reply
-			if (Login(receiver.messagetext) > 0 ){
+			//if (Login(receiver.messagetext) > 0 ){
 				//pipe back that it did not work
 				//pipe it back
 				strcpy(receiver.messagetext, "OK");
@@ -55,9 +55,10 @@ int main(int argc, const char *argv[]){
 					perror("msgsnd");
 				}
 				else {
+					printf("Editor tries to send message back to server\n");
 
 				}
-			}
+			//}
 		//Now we pipe back to the other process to reply 
 		}
 
