@@ -108,14 +108,18 @@ struct my_msgbuf ExecuteOperation(struct my_msgbuf serverBuffer, int server_ID, 
  */
 void sendMessage(struct my_msgbuf serverBuffer, int server_ID){
 	int len = strlen(serverBuffer.messagetext);
-	printf("Your message = %s", serverBuffer.messagetext);
+
 	if (msgsnd(server_ID, &serverBuffer,len+1, 0) == -1){
 		perror("msgsnd");
 	}		// if (serverBuffer.messagetext[len-1] == '\n') serverBuffer.messagetext[len-1] = '\0';
 	else {
 		if (msgrcv(server_ID, &serverBuffer, sizeof(serverBuffer.messagetext), 0, 0) == -1) {
+
 			perror("msgrcv");
 			exit(1);
+		}
+		else{
+			printf("Your message is indeed this  %s\n", serverBuffer.messagetext);
 		}
 	}
 
