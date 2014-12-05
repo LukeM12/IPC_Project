@@ -34,10 +34,87 @@ int main(int argc, const char *argv[]){
 		perror("msgget");
 		exit(1);
 	}
-
 	printf("---==========================---\n    Welcome to the ATM Shell.\n---==========================---\n");
 	serverBuffer.mtype = 1;
 
+	Login(serverBuffer, server_ID);
+	Enter_Shell(server_ID, serverBuffer);
+	if ((msgctl(server_ID, IPC_RMID, NULL)) == -1)
+	{
+		perror("msgctl");
+		exit(1);
+	}
+	printf("Message queue was destroyed");
+	return 0;
+
+}
+/**
+ * Description : this is an infinite shell that 
+ */
+
+void Enter_Shell(int server_ID, struct my_msgbuf serverBuffer){
+	//Unblock the user from logging OUT, which refreshes the login count
+	printf("\n\n\nUser Logged in at %s \n\n",asctime (timeinfo) );
+	printf("To Withdraw Money type 'Withdraw X' where X is the amount of money\n");
+	printf("To Deposit Money type 'Deposit' where X is the amount of money\n");
+	char input[200];
+	while(LOGIN_COUNT < 3){
+		fgets(input, sizeof(input), stdin);
+		int len = strlen(input);
+		if (input[len-1] == '\n') input[len-1] = '\0';
+		serverBuffer = ExecuteOperation(serverBuffer, server_ID, input);
+	}
+}
+
+struct my_msgbuf ExecuteOperation(struct my_msgbuf serverBuffer, int server_ID, char *inString){
+	printf("Your string = %s\n", inString);
+	char copy[200];
+	strcpy( copy, inString);
+	char* token = strtok(inString, " ");
+	int count_fields = 0;
+	float value;
+	char op[10];
+	while (token) {
+	    //printf("token: %s\n", token);
+		if (strcmp(token, "Withdraw") == 0){
+			//Get the other one 
+			//printf("User can only withdraw in Dollars\n");
+			token = strtok(NULL, " ");
+			value = atof(token);
+			printf("token = %f\n", value);
+			//Call Server to WithDraw because its a decent command
+			strcpy(serverBuffer.messagetext, copy );
+			sendMessage(serverBuffer, server_ID);
+
+		}
+		if (strcmp(token, "Deposit") == 0)
+		{
+			token = strtok(NULL, " ");
+			value = atof(token);
+			printf("token = %f\n", value);
+			//Call Server to Deposit
+		}
+	    token = strtok(NULL, " ");
+	    count_fields++;
+	}
+}
+
+void sendMessage(struct my_msgbuf serverBuffer, int server_ID){
+	int len = strlen(serverBuffer.messagetext);
+	printf("Your message = %s", serverBuffer.messagetext);
+	if (msgsnd(server_ID, &serverBuffer,len+1, 0) == -1){
+		perror("msgsnd");
+	}		// if (serverBuffer.messagetext[len-1] == '\n') serverBuffer.messagetext[len-1] = '\0';
+	else {
+		if (msgrcv(server_ID, &serverBuffer, sizeof(serverBuffer.messagetext), 0, 0) == -1) {
+			perror("msgrcv");
+			exit(1);
+		}
+	}
+
+}
+
+void Login(struct my_msgbuf serverBuffer, int server_ID){
 	while(1){
 		//Input Dummy Data Structure
 		char input[200];
@@ -110,88 +187,12 @@ int main(int argc, const char *argv[]){
 					time ( &rawtime );
 						timeinfo = localtime ( &rawtime );
 					printf(" VALID LOGIN\n--------------\n");
-					Enter_Shell(server_ID, serverBuffer);
+					return;
 						printf(" We are in\n");
 				}
 			}
 		}
 	}
-
-	if ((msgctl(server_ID, IPC_RMID, NULL)) == -1)
-	{
-		perror("msgctl");
-		exit(1);
-	}
-	printf("Message queue was destroyed");
-	return 0;
-
 }
-/**
- * Description : this is an infinite shell that 
- */
-
-void Enter_Shell(int server_ID, struct my_msgbuf serverBuffer){
-	//Unblock the user from logging OUT, which refreshes the login count
-	printf("\n\n\nUser Logged in at %s \n\n",asctime (timeinfo) );
-	printf("To Withdraw Money type 'Withdraw X' where X is the amount of money\n");
-	printf("To Deposit Money type 'Deposit' where X is the amount of money\n");
-	char input[200];
-	while(LOGIN_COUNT < 3){
-		fgets(input, sizeof(input), stdin);
-		int len = strlen(input);
-		if (input[len-1] == '\n') input[len-1] = '\0';
-		serverBuffer = ExecuteOperation(serverBuffer, server_ID, input);
-	}
-}
-
-struct my_msgbuf ExecuteOperation(struct my_msgbuf serverBuffer, int server_ID, char *inString){
-
-	printf("Your string = %s\n", inString);
-	char copy[200];
-	strcpy( copy, inString);
-	char* token = strtok(inString, " ");
-	int count_fields = 0;
-	float value;
-	char op[10];
-	while (token) {
-	    //printf("token: %s\n", token);
-		if (strcmp(token, "Withdraw") == 0){
-			//Get the other one 
-			//printf("User can only withdraw in Dollars\n");
-			token = strtok(NULL, " ");
-			value = atof(token);
-			printf("token = %f\n", value);
-			//Call Server to WithDraw because its a decent command
-			strcpy(serverBuffer.messagetext, copy );
-			sendMessage(serverBuffer, server_ID);
-
-		}
-		if (strcmp(token, "Deposit") == 0)
-		{
-			token = strtok(NULL, " ");
-			value = atof(token);
-			printf("token = %f\n", value);
-			//Call Server to Deposit
-		}
-	    token = strtok(NULL, " ");
-	    count_fields++;
-	}
-}
-
-void sendMessage(struct my_msgbuf serverBuffer, int server_ID){
-	int len = strlen(serverBuffer.messagetext);
-	printf("Your message = %s", serverBuffer.messagetext);
-	if (msgsnd(server_ID, &serverBuffer,len+1, 0) == -1){
-		perror("msgsnd");
-	}		// if (serverBuffer.messagetext[len-1] == '\n') serverBuffer.messagetext[len-1] = '\0';
-	else {
-		if (msgrcv(server_ID, &serverBuffer, sizeof(serverBuffer.messagetext), 0, 0) == -1) {
-			perror("msgrcv");
-			exit(1);
-		}
-	}
-
-}
-
 
 
