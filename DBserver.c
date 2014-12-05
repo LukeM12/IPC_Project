@@ -62,7 +62,6 @@ int main (void){
 		else {
 			//int len = strlen(editorBuffer.messagetext);
 			int len = strlen(userBuffer.messagetext) ;
-			printf("Server gets this : %s", userBuffer.messagetext);
 			sprintf(editorBuffer.messagetext, userBuffer.messagetext);
 			if (editorBuffer.messagetext[len-1] == '\n') editorBuffer.messagetext[len-1] = '\0';
 
@@ -98,7 +97,7 @@ int main (void){
 						perror("msgsnd");
 					}
 					else {
-						printf("Tried to send back to the ATM\n");
+						printf("Sending back to the ATM\n\n======");
 					}
 				}
 
