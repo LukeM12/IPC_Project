@@ -285,19 +285,21 @@ void Withdraw(char * val_asString){
 
     /* Avoid tokenizing for unimportant entries */
     int processed_User_Flag = 0;
-
+    int FIRST_PROCESS = 0;
     /* Read the entire file */
     while (bytes_read != -1) { 
     	int been_written = 0;
         bytes_read = getline(&localString, &len, oldDB);
+        memset(backup_String, '\0', sizeof(backup_String));
         strcpy(backup_String, localString);    
         char* token = strtok(localString, ",");
+
 
         /* Parse the string */
 		while (token && ! processed_User_Flag ) {
 		    long int inputAccountNum = strtol(token, NULL, 10);
 		    /* The user already autheticated, we do not need to worry about the PIN again */
-		    if (count_fields==0 && inputAccountNum == AccountNum && !processed_User_Flag){
+		    if (count_fields==0 && inputAccountNum == AccountNum){
 		    	//clear out our memory 
 		    	memset(copy, '\0', sizeof(copy));
 
@@ -322,11 +324,15 @@ void Withdraw(char * val_asString){
 		    		effective = DBval - val;
 		    	}
 		    	char dummy[100];
-		    	printf("In the database it is %s DBval=%f\nval=%f\neffective=%f\n" , copy, DBval, val, effective);
-		    	printf("Copy = %s ", copy);
-				fprintf(newDB, "%s", copy);
-				fprintf(newDB, "%.2f\n", effective);
-				processed_User_Flag = 1;
+		    	//printf("In the database it is %s DBval=%f\nval=%f\neffective=%f\n" , copy, DBval, val, effective);
+		    	if (processed_User_Flag == 0){
+					fprintf(newDB, "%s%.2f\n", copy,effective);
+					//To not have to loop this each time
+					processed_User_Flag = 1;
+					//To not rewrite this line afterwards
+					FIRST_PROCESS = 1;
+				}
+				
 		    }
 		    else {
 		    	/* If it not the user just write out to the second file */
@@ -335,8 +341,15 @@ void Withdraw(char * val_asString){
 		    token = strtok(NULL, ",");
 		    count_fields++;
 		}
-		//We have read the whole string just output the rest of the DB
-	fprintf(newDB, "%s", backup_String);
+	//We have read the whole string just output the rest of the DB
+	if (processed_User_Flag > 0 && FIRST_PROCESS == 0){
+		fprintf(newDB, "%s", backup_String);
+	}
+	//Flips the bit that tells us - we already wrote the current user
+	if (FIRST_PROCESS == 1) {
+		FIRST_PROCESS = 0;
+	}
+
 	count_fields = 0;
 	count_entries++;
 	}

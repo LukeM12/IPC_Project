@@ -11,4 +11,3 @@ gnome-terminal -x ./editor
 gnome-terminal -x ./server
 gnome-terminal -x ./atm
 #xterm -hold -e './server' & 
-#xterm -hold -e './atm' & 
