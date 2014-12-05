@@ -36,9 +36,10 @@ int main(int argc, const char *argv[]){
 	}
 	printf("---==========================---\n    Welcome to the ATM Shell.\n---==========================---\n");
 	serverBuffer.mtype = 1;
-
-	Login(serverBuffer, server_ID);
-	Enter_Shell(server_ID, serverBuffer);
+	while(1){
+		Login(serverBuffer, server_ID); //Only when we log in, can we enter the shell
+		Enter_Shell(server_ID, serverBuffer); //And only when they log out, can we leave the shell
+	}
 	if ((msgctl(server_ID, IPC_RMID, NULL)) == -1)
 	{
 		perror("msgctl");
@@ -54,6 +55,7 @@ int main(int argc, const char *argv[]){
 
 void Enter_Shell(int server_ID, struct my_msgbuf serverBuffer){
 	//Unblock the user from logging OUT, which refreshes the login count
+
 	printf("\n\n\nUser Logged in at %s \n\n",asctime (timeinfo) );
 	printf("To Withdraw Money type 'Withdraw X' where X is the amount of money\n");
 	printf("To Deposit Money type 'Deposit' where X is the amount of money\n");
@@ -65,8 +67,13 @@ void Enter_Shell(int server_ID, struct my_msgbuf serverBuffer){
 		serverBuffer = ExecuteOperation(serverBuffer, server_ID, input);
 	}
 }
-
+/**
+ * Description: Take in an operation and execute it
+ */
 struct my_msgbuf ExecuteOperation(struct my_msgbuf serverBuffer, int server_ID, char *inString){
+	if (server_ID == 0 ){
+		return serverBuffer;
+	}	
 	printf("Your string = %s\n", inString);
 	char copy[200];
 	strcpy( copy, inString);
@@ -75,18 +82,16 @@ struct my_msgbuf ExecuteOperation(struct my_msgbuf serverBuffer, int server_ID, 
 	float value;
 	char op[10];
 	while (token) {
-	    //printf("token: %s\n", token);
+	    /* If it is a Withdrawel operation, then process it */
 		if (strcmp(token, "Withdraw") == 0){
-			//Get the other one 
-			//printf("User can only withdraw in Dollars\n");
 			token = strtok(NULL, " ");
 			value = atof(token);
 			printf("token = %f\n", value);
-			//Call Server to WithDraw because its a decent command
 			strcpy(serverBuffer.messagetext, copy );
 			sendMessage(serverBuffer, server_ID);
 
 		}
+	    /* If it is a Deposit operation, then process it */
 		if (strcmp(token, "Deposit") == 0)
 		{
 			token = strtok(NULL, " ");
@@ -98,7 +103,9 @@ struct my_msgbuf ExecuteOperation(struct my_msgbuf serverBuffer, int server_ID, 
 	    count_fields++;
 	}
 }
-
+/**
+ * Send a message to the server with a result
+ */
 void sendMessage(struct my_msgbuf serverBuffer, int server_ID){
 	int len = strlen(serverBuffer.messagetext);
 	printf("Your message = %s", serverBuffer.messagetext);
