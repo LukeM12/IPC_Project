@@ -12,16 +12,12 @@
 #include <sys/msg.h>
 #include <ctype.h>
 #include <time.h>
-
-struct my_msgbuf {
-	long mtype;
-	char messagetext[200];
-};
+#include "Banking.h"
 
 int LOGIN_COUNT = 0;
 time_t rawtime;
 struct tm * timeinfo;
-
+struct my_msgbuf ExecuteOperation(struct my_msgbuf , int , char *);
 int main(int argc, const char *argv[]){
 	key_t server_key;
 	int server_ID;
@@ -39,7 +35,7 @@ int main(int argc, const char *argv[]){
 		exit(1);
 	}
 
-	printf("---==========================---\n    Welcome to the ATM Shell.\n---==========================---\nPlease Log in:\n\n");
+	printf("---==========================---\n    Welcome to the ATM Shell.\n---==========================---\n");
 	serverBuffer.mtype = 1;
 
 	while(1){
@@ -54,8 +50,7 @@ int main(int argc, const char *argv[]){
 			printf("Please contact your local administrator to get access to your account\n");
 		}
 		else {
-			printf("Input your 5 digit User Account Number\n");
-			printf("(Invalid Login Attempts do not lower your Login Attempt tries)\n");
+			printf("Please Log in:\nEnter Your 5 Digit Account Number\n(Login Attempts that ATM does not send do not lower your Login Attempt tries)\n");
 		}
 		fgets(input, sizeof(input), stdin);
 		if (LOGIN_COUNT >= 3){
@@ -65,7 +60,8 @@ int main(int argc, const char *argv[]){
 		len = strlen(input) - 1; //for null terminating
 		//get rid of newline
 		if (len < 5 || len > 5){
-			printf("Account Number Needs to be 5 (five) digits. Please try again :\n");
+			printf("Account Number Needs to be 5 (five) digits. ATM attempts not send\n");
+			printf("Login Attempts Left=%i\n\n", 3-LOGIN_COUNT);
 			continue;
 		}
 		if (input[strlen(input)-1] == '\n') input[strlen(input)-1] = '\0';
@@ -77,6 +73,13 @@ int main(int argc, const char *argv[]){
 		printf("Input your 3 digit PIN\n");
 		fgets(input, sizeof(input), stdin);
 		if (input[strlen(input)-1] == '\n') input[strlen(input)-1] = '\0';
+		len = strlen(input); //for null terminating
+		//get rid of newline
+		if (len < 3 || len > 3){
+			printf("Account PIN Needs to be 3 (three) digits. ATM attempts not send. Try Again\n");
+			printf("Login Attempts Left=%i\n\n", 3-LOGIN_COUNT);
+			continue;
+		}
 		//Append that to the end
 		strcat(serverBuffer.messagetext, input);
 		len = strlen(serverBuffer.messagetext);
@@ -91,20 +94,24 @@ int main(int argc, const char *argv[]){
 				perror("msgrcv");
 				exit(1);
 			}
-			{
+			else {
 				printf("ATM Result = %s ->", serverBuffer.messagetext);
 				if (strcmp(serverBuffer.messagetext, "NOT OK") == 0){
 					LOGIN_COUNT++;
+					printf(" INVALID LOGIN ATTEMPT\n--------------\n");
 					if (LOGIN_COUNT == 3){
-						printf("INVALID ATTEMPT\n")
 						//Grab the time for reference. Not necessary though
 						time ( &rawtime );
 						timeinfo = localtime ( &rawtime );
 					}
 				}
-
-				else{
-					//Enter the shell
+				else if (strcmp(serverBuffer.messagetext, "OK") == 0) {
+					//Grab the time and enter the shell, we are in.
+					time ( &rawtime );
+						timeinfo = localtime ( &rawtime );
+					printf(" VALID LOGIN\n--------------\n");
+					Enter_Shell(server_ID, serverBuffer);
+						printf(" We are in\n");
 				}
 			}
 		}
@@ -115,10 +122,64 @@ int main(int argc, const char *argv[]){
 		perror("msgctl");
 		exit(1);
 	}
-
 	printf("Message queue was destroyed");
 	return 0;
 
-
-
 }
+/**
+ * Description : this is an infinite shell that 
+ */
+
+void Enter_Shell(int server_ID, struct my_msgbuf serverBuffer){
+	//Unblock the user from logging OUT, which refreshes the login count
+	printf("\n\n\nUser Logged in at %s \n\n",asctime (timeinfo) );
+	printf("To Withdraw Money type 'Withdraw X' where X is the amount of money\n");
+	printf("To Deposit Money type 'Deposit' where X is the amount of money\n");
+	char input[200];
+	while(LOGIN_COUNT < 3){
+		fgets(input, sizeof(input), stdin);
+		int len = strlen(input);
+		if (input[len-1] == '\n') input[len-1] = '\0';
+		serverBuffer = ExecuteOperation(serverBuffer, server_ID, input);
+		//execute operation
+		// if (msgsnd(server_ID, &serverBuffer,len+1, 0) == -1){
+		// 	perror("msgsnd");
+		// }		// if (serverBuffer.messagetext[len-1] == '\n') serverBuffer.messagetext[len-1] = '\0';
+		// else {
+		// 	if (msgrcv(server_ID, &serverBuffer, sizeof(serverBuffer.messagetext), 0, 0) == -1) {
+		// 		perror("msgrcv");
+		// 		exit(1);
+		// 	}
+	}
+}
+
+struct my_msgbuf ExecuteOperation(struct my_msgbuf serverBuffer, int server_ID, char *inString){
+	char* token = strtok(inString, " ");
+	int count_fields = 0;
+	float value;
+	char op[10];
+	printf("Your string = %s\n", inString);
+	while (token) {
+	    //printf("token: %s\n", token);
+		if (strcmp(token, "Withdraw") == 0){
+			//Get the other one 
+			//printf("User can only withdraw in Dollars\n");
+			token = strtok(NULL, " ");
+			value = atof(token);
+			printf("token = %f\n", value);
+			//Call Database 
+
+		}
+		if (strcmp(token, "Deposit") == 0)
+		{
+			token = strtok(NULL, " ");
+			value = atof(token);
+			printf("token = %f\n", value);
+		}
+	    token = strtok(NULL, " ");
+	    count_fields++;
+	}
+}
+
+
+
