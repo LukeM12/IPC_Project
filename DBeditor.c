@@ -16,6 +16,7 @@ struct my_msgbuf {
 void parseInputFile();
 int Login(char *);
 int test_user_Exists();
+int LOGIN_BIT = 0;
 int main(int argc, const char *argv[]){
 	key_t server_key;
 	int server_ID;
@@ -40,6 +41,7 @@ int main(int argc, const char *argv[]){
 			perror("msgrcv");
 			exit(1);
 		}
+
 		else {
 			//Process the request. Try and log in 
 
@@ -49,6 +51,9 @@ int main(int argc, const char *argv[]){
 			// then we send back the reply
 			if (login_result > 0 ){
 				sprintf(receiver.messagetext, "OK");
+				//Have a global flag here that goes and leaves logon mode 
+				LOGIN_BIT = 1;
+				//Enter_Login(receiver, server_ID);
 			}
 			else if (login_result == 0) {
 				sprintf(receiver.messagetext, "NOT OK");
@@ -65,6 +70,10 @@ int main(int argc, const char *argv[]){
 			}
 			else {
 				printf("Editor tries to send message back to server\n");
+				if (LOGIN_BIT > 0){
+					Enter_Login(receiver, server_ID);
+				}
+				//The message was ok? Then go to the shell
 			}
 		//Now we pipe back to the other process to reply 
 		}
@@ -214,3 +223,32 @@ int Login(char *a){
     }
 	return user_Exists(Account, PIN);
 }
+
+void Enter_Login(struct my_msgbuf receiver, int server_ID){
+	for(;;) { 
+		if (msgrcv(server_ID, &receiver, sizeof(receiver.messagetext), 0, 0) == -1) {
+			perror("msgrcv");
+			exit(1);
+		}
+		else {
+			//Process the request. Try and log in 
+			int len = strlen(receiver.messagetext);
+
+			printf("WE ARE IN THE SHELL\n");
+			// we do string parsing here
+
+			len = strlen(receiver.messagetext); // We meed to reset our length after 
+			if (msgsnd(server_ID, &receiver,len+1, 0) == -1){
+				printf("Message was not sent\n");
+				perror("msgsnd");
+			}
+			else {
+				printf("Editor tries to send message back to server\n");
+			}
+		//Now we pipe back to the other process to reply 
+		}
+
+		printf("DBserver SAYS: \"%s\"\n", receiver.messagetext);
+	}
+}
+

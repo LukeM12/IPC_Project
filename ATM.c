@@ -141,24 +141,18 @@ void Enter_Shell(int server_ID, struct my_msgbuf serverBuffer){
 		int len = strlen(input);
 		if (input[len-1] == '\n') input[len-1] = '\0';
 		serverBuffer = ExecuteOperation(serverBuffer, server_ID, input);
-		//execute operation
-		// if (msgsnd(server_ID, &serverBuffer,len+1, 0) == -1){
-		// 	perror("msgsnd");
-		// }		// if (serverBuffer.messagetext[len-1] == '\n') serverBuffer.messagetext[len-1] = '\0';
-		// else {
-		// 	if (msgrcv(server_ID, &serverBuffer, sizeof(serverBuffer.messagetext), 0, 0) == -1) {
-		// 		perror("msgrcv");
-		// 		exit(1);
-		// 	}
 	}
 }
 
 struct my_msgbuf ExecuteOperation(struct my_msgbuf serverBuffer, int server_ID, char *inString){
+
+	printf("Your string = %s\n", inString);
+	char copy[200];
+	strcpy( copy, inString);
 	char* token = strtok(inString, " ");
 	int count_fields = 0;
 	float value;
 	char op[10];
-	printf("Your string = %s\n", inString);
 	while (token) {
 	    //printf("token: %s\n", token);
 		if (strcmp(token, "Withdraw") == 0){
@@ -167,7 +161,9 @@ struct my_msgbuf ExecuteOperation(struct my_msgbuf serverBuffer, int server_ID, 
 			token = strtok(NULL, " ");
 			value = atof(token);
 			printf("token = %f\n", value);
-			//Call Database 
+			//Call Server to WithDraw because its a decent command
+			strcpy(serverBuffer.messagetext, copy );
+			sendMessage(serverBuffer, server_ID);
 
 		}
 		if (strcmp(token, "Deposit") == 0)
@@ -175,10 +171,26 @@ struct my_msgbuf ExecuteOperation(struct my_msgbuf serverBuffer, int server_ID, 
 			token = strtok(NULL, " ");
 			value = atof(token);
 			printf("token = %f\n", value);
+			//Call Server to Deposit
 		}
 	    token = strtok(NULL, " ");
 	    count_fields++;
 	}
+}
+
+void sendMessage(struct my_msgbuf serverBuffer, int server_ID){
+	int len = strlen(serverBuffer.messagetext);
+	printf("Your message = %s", serverBuffer.messagetext);
+	if (msgsnd(server_ID, &serverBuffer,len+1, 0) == -1){
+		perror("msgsnd");
+	}		// if (serverBuffer.messagetext[len-1] == '\n') serverBuffer.messagetext[len-1] = '\0';
+	else {
+		if (msgrcv(server_ID, &serverBuffer, sizeof(serverBuffer.messagetext), 0, 0) == -1) {
+			perror("msgrcv");
+			exit(1);
+		}
+	}
+
 }
 
 
