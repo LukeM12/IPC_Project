@@ -14,7 +14,7 @@ struct my_msgbuf {
 	char messagetext[200];
 };
 void parseInputFile();
-void ParseString(char *);
+int Login(char *);
 int test_user_Exists();
 int main(int argc, const char *argv[]){
 	key_t server_key;
@@ -27,32 +27,49 @@ int main(int argc, const char *argv[]){
 		exit(1);
 	}
 
-	//parseInputFile();
 	/* Get an instance of the ,message queue */
 	if ((server_ID = msgget(server_key, 0644 | IPC_CREAT)) == -1){
 		perror("msgget");
 		exit(1);
 	}
+
 	printf("The Database Listener is awake and waiting for Database Input\n=======================\n");
-	/* Start the Database Data Miner  AKA DB edtiro*/
+	/* Start the Database Data Miner  AKA DB editor*/
 	for(;;) { 
 		if (msgrcv(server_ID, &receiver, sizeof(receiver.messagetext), 0, 0) == -1) {
 			perror("msgrcv");
 			exit(1);
 		}
-		else{
-			ParseString(receiver.messagetext);
+		else {
+			//first we try and log in
+			int var = Login(receiver.messagetext);
+			int len = strlen(receiver.messagetext);
+
+			//then we send back the reply
+			if (Login(receiver.messagetext) > 0 ){
+				//pipe back that it did not work
+				//pipe it back
+				strcpy(receiver.messagetext, "OK");
+				if (msgsnd(server_ID, &receiver,len+1, 0) == -1){
+					printf("Message was not sent\n");
+					perror("msgsnd");
+				}
+				else {
+
+				}
+			}
+
+
+
+			//Now we pipe back to the other process to reply 
 		}
-		ParseString(receiver.messagetext);
+
 		printf("DBserver SAYS: \"%s\"\n", receiver.messagetext);
 	}
-
-
 	if ((msgctl(server_ID, IPC_RMID, NULL)) == -1){
 		perror("msgctl");
 		exit(1);
 	}
-
 	printf("Message queue was destroyed");
 	return 0;
 
@@ -87,8 +104,33 @@ void parseInputFile(){
  * @param: the User Account Number
  * return: If the user exists in the database or not
  */
-int user_Exists((int AccountNum, int PIN){
-
+// void parseInputFile(){
+//     char *localString;
+//     size_t len = 0;
+//     int bytes_read;
+//     char *token2;
+//     const char s[2] = ",";
+//     FILE* inFile = fopen("database.txt","r");
+//     int one,two,three;
+//     int count_entries = 0;
+//     int count_fields = 0;
+//     while (bytes_read != -1) { 
+//         bytes_read = getline(&localString, &len, inFile);    
+//         char* token = strtok(localString, ",");
+// 		while (token) {
+// 		    printf("token: %s\n", token);
+// 		    token = strtok(NULL, ",");
+// 		    count_fields++;
+// 		}
+//      }
+// }
+/**
+ * Description : This checks to see if the end user exists  
+ * @param: the User Account Number
+ * return: If the user exists in the database or not
+ */
+int user_Exists(int AccountNum, int PIN){
+	// AccountNum -= 1;
     char *localString;
     size_t len = 0;
     int bytes_read;
@@ -110,11 +152,10 @@ int user_Exists((int AccountNum, int PIN){
 		    	token = strtok(NULL, ",");
 		    	long int a = strtol(token, NULL, 10);
 		    	if (a == PIN){
-		    		printf("We have a winner, sir!\n")
-;		    		return 1;
+		    		printf("We have a winner, sir!\n");
+		    		return 1;
 		    	}
 		    }
-
 		    token = strtok(NULL, ",");
 		    count_fields++;
 
@@ -136,12 +177,21 @@ int test_user_Exists(){
 	}
      return 0;
 }
+/**
+ * Description : The log in method to check to see if the user exists
+ * pass in the user account like this ACCOUNT PIN 
+ * @param: The input string to autheticate with
+ * return: 1 for success, 0 for failure , -1 for bad string
+ */
 
-void ParseString(char *a){
+int Login(char *a){
     int count_fields = 0;
     int PIN;
     int Account;
     char* token = strtok(a, " ");
+    if (a == NULL){
+    	return -1;
+    }
     while (token) {
         if (count_fields == 0){
             Account = atoi(token);
@@ -151,10 +201,10 @@ void ParseString(char *a){
         }
         else{ 
             printf("Throw an error\n");
-            return ;
+            return -1;
         }
         token = strtok(NULL, " ");
         count_fields++;
     }
-	user_Exists(Account, PIN);
+	return user_Exists(Account, PIN);
 }

@@ -3,7 +3,6 @@
 Note : the editor will always take precedence in any operation
 Because the user is disposable and the server always need to function independently 
 # author : Luke Morrison
-Contributor/Partner Abhinav Thukral
 
 */
 
