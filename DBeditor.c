@@ -252,7 +252,7 @@ void ExecuteOperation(struct my_msgbuf receiver, int server_ID){
  * @param val_asString: the value that is being passe in
  */
 void Withdraw(char * val_asString){
-	float val = 	atof(val_asString);
+	float val = atof(val_asString);
 	printf("token = %f\n", val);
 	int AccountNum = Login_Cookie;
 	printf("Incoming Val = %f", val);
@@ -262,10 +262,13 @@ void Withdraw(char * val_asString){
     char *token2;
     const char s[2] = ",";
     char copy[100];
+    char backup_String[100];
 
-    /* File Weaving technique. Open 2 files. Write updates file to 2nd one. Delete 1st one, and then 
+    /** 
+    * File Weaving technique. Open 2 files. Write updates file to 2nd one. Delete 1st one, and then 
     * rename 2nd one to have name as 1st one. OS inherently protects filelock, and the benefit is 
-    * protection against memory overflow */
+    * protection against memory overflow 
+    **/
     FILE* oldDB = fopen("database.txt","r");
     if (oldDB == NULL){
     	printf("ERROR: FILE OPEN\n");
@@ -285,15 +288,16 @@ void Withdraw(char * val_asString){
 
     /* Read the entire file */
     while (bytes_read != -1) { 
+    	int been_written = 0;
         bytes_read = getline(&localString, &len, oldDB);
-        strcpy(copy, localString);    
+        strcpy(backup_String, localString);    
         char* token = strtok(localString, ",");
+
         /* Parse the string */
-		while (token && !processed_User_Flag ) {
-
+		while (token && ! processed_User_Flag ) {
 		    long int inputAccountNum = strtol(token, NULL, 10);
-
-		    if (count_fields==0 && inputAccountNum == AccountNum){
+		    /* The user already autheticated, we do not need to worry about the PIN again */
+		    if (count_fields==0 && inputAccountNum == AccountNum && !processed_User_Flag){
 		    	//clear out our memory 
 		    	memset(copy, '\0', sizeof(copy));
 
@@ -313,36 +317,31 @@ void Withdraw(char * val_asString){
 		    	if (DBval < val){
 		    		effective = DBval;
 
-		    		//fine tuen the string
 		    	} 
 		    	else {
 		    		effective = DBval - val;
-
 		    	}
 		    	char dummy[100];
-		    	// sprintf(dummy, "%f", effective);	
-		    	// printf("Dummy = %s", effective);
 		    	printf("In the database it is %s DBval=%f\nval=%f\neffective=%f\n" , copy, DBval, val, effective);
-
+		    	printf("Copy = %s ", copy);
 				fprintf(newDB, "%s", copy);
 				fprintf(newDB, "%.2f\n", effective);
-				fprintf(newDB, "%s", copy);
-				fprintf(newDB, "%.2f", effective);
-
+				processed_User_Flag = 1;
 		    }
 		    else {
-		    	//fprintf(newDB, copy);
+		    	/* If it not the user just write out to the second file */
+				// fprintf(newDB, "%s", backup_String);
 		    }
 		    token = strtok(NULL, ",");
 		    count_fields++;
-
 		}
+		//We have read the whole string just output the rest of the DB
+	fprintf(newDB, "%s", backup_String);
 	count_fields = 0;
 	count_entries++;
 	}
 	fclose(newDB);
 	fclose(oldDB);
-	//return "Hello";
 }
 /**
  * Description : This checks to see if the end user exists  
