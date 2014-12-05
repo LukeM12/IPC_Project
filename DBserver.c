@@ -75,6 +75,7 @@ int main (void){
 				perror("msgsnd");
 			}
 			else{
+				
 				printf("Editor Received the Message\n");
 				//Ok so this is the interesting part. We will wait for a reply from the DB editor. If there is no reply
 				//Then we time out first.
