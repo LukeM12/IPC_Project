@@ -59,10 +59,7 @@ int main(int argc, const char *argv[]){
 		strcat(serverBuffer.messagetext, input);
 
 		if (serverBuffer.messagetext[len-1] == '\n') serverBuffer.messagetext[len-1] = '\0';
-// 		if (serverBuffer.messagetext[len-1] == '\n') serverBuffer.messagetext[len-1] = '\0';
-// 		if (serverBuffer.messagetext[len-1] == '\n') serverBuffer.messagetext[len-1] = '\0';
-// 		if (serverBuffer.messagetext[len-1] == '\n') serverBuffer.messagetext[len-1] = '\0';
-// ./
+
 		printf("ATM sending = %s\nLength= %i\n",serverBuffer.messagetext, len);
 		len = strlen(serverBuffer.messagetext);
 		if (msgsnd(server_ID, &serverBuffer,len+1, 0) == -1){

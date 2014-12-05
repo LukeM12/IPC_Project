@@ -41,10 +41,10 @@ int main(int argc, const char *argv[]){
 			exit(1);
 		}
 		else {
-			//first we try and log in
+			//Process the request. Try and log in 
 			int var = Login(receiver.messagetext);
 			int len = strlen(receiver.messagetext);
-
+			printf("We have tried to log in");
 			//then we send back the reply
 			if (Login(receiver.messagetext) > 0 ){
 				//pipe back that it did not work
@@ -58,10 +58,7 @@ int main(int argc, const char *argv[]){
 
 				}
 			}
-
-
-
-			//Now we pipe back to the other process to reply 
+		//Now we pipe back to the other process to reply 
 		}
 
 		printf("DBserver SAYS: \"%s\"\n", receiver.messagetext);
