@@ -37,31 +37,38 @@ int main(int argc, const char *argv[]){
 	serverBuffer.mtype = 1; /* we don't really care in this case */
 	while(1){
 		//int len = strlen(serverBuffer.messagetext);
-		char input[100];
+		char input[200];
 		char b[100];
 		int len = strlen(input);
 		//The the message Queue to start
-		memset(serverBuffer.messagetext,0,sizeof(serverBuffer.messagetext));
+		memset(serverBuffer.messagetext, '\0' ,sizeof(serverBuffer.messagetext));
 		
-		printf("Input your User Account Number\n");
+		printf("Input your 5 digit User Account Number\n");
 		fgets(input, sizeof(input), stdin);
-		strcat(serverBuffer.messagetext, input);
-		// if (serverBuffer.messagetext[len-1] == '\n') serverBuffer.messagetext[len-1] = '\0';
-		len = strlen(input);
 
 		if (serverBuffer.messagetext[len-1] == '\n') serverBuffer.messagetext[len-1] = '\0';
+		len = strlen(input) - 1; //for null terminating
+		//get rid of newline
+		if (len < 5 || len > 5){
+			printf("Account Number Needs to be 5 (five) digits. Please try again :\n");
+			continue;
+		}
+		if (input[strlen(input)-1] == '\n') input[strlen(input)-1] = '\0';
+		//Copy it to messagetext
+		strcat(serverBuffer.messagetext, input);
 		strcat(serverBuffer.messagetext, " ");
-		len = strlen(input);
-		if (serverBuffer.messagetext[len-1] == '\n') serverBuffer.messagetext[len-1] = '\0';
 
-		printf("Input your PIN\n");
+		//get the next value from the user & rid the messageText
+		printf("Input your 3 digit PIN\n");
 		fgets(input, sizeof(input), stdin);
+		if (input[strlen(input)-1] == '\n') input[strlen(input)-1] = '\0';
+
+		//Append that to the end
 		strcat(serverBuffer.messagetext, input);
 
-		if (serverBuffer.messagetext[len-1] == '\n') serverBuffer.messagetext[len-1] = '\0';
-
-		printf("ATM sending = %s\nLength= %i\n",serverBuffer.messagetext, len);
 		len = strlen(serverBuffer.messagetext);
+		printf("ATM sending = %s\nLength= %i\n",serverBuffer.messagetext, len);
+
 		if (msgsnd(server_ID, &serverBuffer,len+1, 0) == -1){
 			perror("msgsnd");
 		}		// if (serverBuffer.messagetext[len-1] == '\n') serverBuffer.messagetext[len-1] = '\0';

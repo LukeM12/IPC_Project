@@ -58,12 +58,12 @@ int main (void){
 		 * If the message was passed in, this is where the sanitation will go
 		 * To Fulfill the functional requirements of the assignment
 		 */
-		else{
-			//So it received a message. First get a copy of that.
-			//strcpy(editorBuffer.messagetext, userBuffer.messagetext);
-			int len = strlen(editorBuffer.messagetext);
-		   sprintf
-		    (editorBuffer.messagetext, userBuffer.messagetext);
+		 //handle_message()
+		else {
+			//int len = strlen(editorBuffer.messagetext);
+			int len = strlen(userBuffer.messagetext) ;
+			printf("Server gets this : %s", userBuffer.messagetext);
+			sprintf(editorBuffer.messagetext, userBuffer.messagetext);
 			if (editorBuffer.messagetext[len-1] == '\n') editorBuffer.messagetext[len-1] = '\0';
 
 			printf("Value Received from ATM: %s\nSending to Editor\n",editorBuffer.messagetext);
@@ -75,12 +75,10 @@ int main (void){
 				perror("msgsnd");
 			}
 			else{
-				printf("Editor Received the Message\n");
-				//Ok so this is the interesting part. We will wait for a reply from the DB editor. If there is no reply
-				//Then we time out first.
+				//printf("Editor Received the Message = %s\n",editorBuffer.messagetext);
+				//Ok so this is the interesting part. We will wait for a reply from the DB editor to give back to the user
 				len = strlen(editorBuffer.messagetext);
-
-				//Right here is where it is fucking up
+				memset(editorBuffer.messagetext, '\0', sizeof(editorBuffer));
 				//It wants to get something back from the received
 				if (msgrcv(EDITOR_ID, &editorBuffer, sizeof(editorBuffer.messagetext), 0, 0) == -1) {
 					perror("msgrcv");
@@ -94,8 +92,8 @@ int main (void){
 					//i.e. send the editor buffer
 					// (msgsnd(ATM_ID, &editorBuffer,len+1, 0) == -1){
 					// De-comment below to send back to the user 			
-					strcpy(userBuffer.messagetext, editorBuffer.messagetext);
-					if (msgsnd(ATM_ID, &userBuffer,len+1, 0) == -1){
+					//strcpy(userBuffer.messagetext, editorBuffer.messagetext);
+					if (msgsnd(ATM_ID, &editorBuffer,len+1, 0) == -1){
 						printf("Message was not sent\n\n");
 						perror("msgsnd");
 					}

@@ -42,32 +42,23 @@ int main(int argc, const char *argv[]){
 		}
 		else {
 			//Process the request. Try and log in 
+
 			int login_result = Login(receiver.messagetext);
 			int len = strlen(receiver.messagetext);
 			printf("We have tried to log in\n");
 			// then we send back the reply
 			if (login_result > 0 ){
-				// pipe back that it did not work
-				// pipe it back
-				strcpy(receiver.messagetext, "OK");
-				// if (msgsnd(server_ID, &receiver,len+1, 0) == -1){
-				// 	printf("Message was not sent\n");
-				// 	perror("msgsnd");
-				// }
-				// else {
-				// 	printf("Editor tries to send message back to server\n");
-
-				// }
+				sprintf(receiver.messagetext, "OK");
 			}
 			else if (login_result == 0) {
-				strcpy(receiver.messagetext, "NOT OK");
+				sprintf(receiver.messagetext, "NOT OK");
 
 			}
-
-			else{
+			else {
 				strcpy(receiver.messagetext, "ERROR: NULL STRING");
 			}
 			/* Send the Result back to the DB server */
+			len = strlen(receiver.messagetext); // We meed to reset our length after 
 			if (msgsnd(server_ID, &receiver,len+1, 0) == -1){
 				printf("Message was not sent\n");
 				perror("msgsnd");
@@ -202,6 +193,7 @@ int Login(char *a){
     int count_fields = 0;
     int PIN;
     int Account;
+    printf("Login is scanninging the string %s\n", a);
     char* token = strtok(a, " ");
     if (a == NULL){
     	return -1;
