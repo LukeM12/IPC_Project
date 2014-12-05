@@ -39,63 +39,63 @@ int main(int argc, const char *argv[]){
 		perror("msgget");
 		exit(1);
 	}
-	Login_Cookie = 1;
-	//char * a = Withdraw("2.5");
-	strcpy(receiver.messagetext, "Deposit 2");
-	char *b = ExecuteOperation(receiver, server_ID);
-	printf("\nb= %s\n", b);
-	// printf("The Database Listener is awake and waiting for Database Input\n=======================\n");
-	// /* Start the Database Data Miner  AKA DB editor*/
-	// for(;;) { 
-	// 	if (msgrcv(server_ID, &receiver, sizeof(receiver.messagetext), 0, 0) == -1) {
-	// 		perror("msgrcv");
-	// 		exit(1);
-	// 	}
+	// Login_Cookie = 1;
+	// //char * a = Withdraw("2.5");
+	// strcpy(receiver.messagetext, "Deposit 2");
+	// char *b = ExecuteOperation(receiver, server_ID);
+	// printf("\nb= %s\n", b);
+	printf("The Database Listener is awake and waiting for Database Input\n=======================\n");
+	/* Start the Database Data Miner  AKA DB editor*/
+	for(;;) { 
+		if (msgrcv(server_ID, &receiver, sizeof(receiver.messagetext), 0, 0) == -1) {
+			perror("msgrcv");
+			exit(1);
+		}
 
-	// 	else {
-	// 		//Process the request. Try and log in 
+		else {
+			//Process the request. Try and log in 
 
-	// 		int login_result = Login(receiver.messagetext);
-	// 		int len = strlen(receiver.messagetext);
-	// 		printf("We have tried to log in\n");
-	// 		// then we send back the reply
-	// 		if (login_result > 0 ){
-	// 			sprintf(receiver.messagetext, "OK");
-	// 			//Have a global flag here that goes and leaves logon mode 
-	// 			LOGIN_BIT = 1;
-	// 		}
-	// 		else if (login_result == 0) {
-	// 			sprintf(receiver.messagetext, "NOT OK");
+			int login_result = Login(receiver.messagetext);
+			int len = strlen(receiver.messagetext);
+			printf("We have tried to log in\n");
+			// then we send back the reply
+			if (login_result > 0 ){
+				sprintf(receiver.messagetext, "OK");
+				//Have a global flag here that goes and leaves logon mode 
+				LOGIN_BIT = 1;
+			}
+			else if (login_result == 0) {
+				sprintf(receiver.messagetext, "NOT OK");
 
-	// 		}
-	// 		else {
-	// 			strcpy(receiver.messagetext, "ERROR: NULL STRING");
-	// 		}
-	// 		/* Send the Result back to the DB server */
-	// 		len = strlen(receiver.messagetext); // We meed to reset our length after 
-	// 		if (msgsnd(server_ID, &receiver,len+1, 0) == -1){
-	// 			printf("Message was not sent\n");
-	// 			perror("msgsnd");
-	// 		}
-	// 		else {
-	// 			printf("Editor tries to send message back to server\n");
-	// 			//Leave Login Mode if User authenticated
-	// 			if (LOGIN_BIT > 0){
-	// 				printf("Going in\n");
-	// 				Enter_Login(receiver, server_ID);
-	// 			}
-	// 			//The message was ok? Then go to the shell
-	// 		}
-	// 	//Now we pipe back to the other process to reply 
-	// 	}
+			}
+			else {
+				strcpy(receiver.messagetext, "ERROR: NULL STRING");
+			}
+			/* Send the Result back to the DB server */
+			len = strlen(receiver.messagetext); // We meed to reset our length after 
+			if (msgsnd(server_ID, &receiver,len+1, 0) == -1){
+				printf("Message was not sent\n");
+				perror("msgsnd");
+			}
+			else {
+				printf("Editor tries to send message back to server\n");
+				//Leave Login Mode if User authenticated
+				if (LOGIN_BIT > 0){
+					printf("Going in\n");
+					Enter_Login(receiver, server_ID);
+				}
+				//The message was ok? Then go to the shell
+			}
+		//Now we pipe back to the other process to reply 
+		}
 
-	// 	printf("DBserver SAYS: \"%s\"\n", receiver.messagetext);
-	// }
-	// if ((msgctl(server_ID, IPC_RMID, NULL)) == -1){
-	// 	perror("msgctl");
-	// 	exit(1);
-	// }
-	// printf("Message queue was destroyed");
+		printf("DBserver SAYS: \"%s\"\n", receiver.messagetext);
+	}
+	if ((msgctl(server_ID, IPC_RMID, NULL)) == -1){
+		perror("msgctl");
+		exit(1);
+	}
+	printf("Message queue was destroyed");
 	return 0;
 }
  /************************                   Post Authentication 				 ************************  /
@@ -121,7 +121,7 @@ void Enter_Login(struct my_msgbuf receiver, int server_ID){
 			//Now what we want to do is paste that and send it back to the user 
 			//just return a char here ideally with their currenty balance and send it back
 
-
+			strcpy(receiver.messagetext, msg);
 			len = strlen(receiver.messagetext); // We meed to reset our length after 
 			if (msgsnd(server_ID, &receiver,len+1, 0) == -1){
 				printf("Message was not sent\n");
@@ -276,7 +276,7 @@ char* Withdraw(char * val_asString){
 		}
 	//We have read the whole string just output the rest of the DB
 	if (processed_User_Flag > 0 && FIRST_PROCESS == 0){
-		if (strlen(backup_String > 8){
+		if (strlen(backup_String) > 8){
 		 	fprintf(newDB, "%s", backup_String);
 		}
 	}
