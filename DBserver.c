@@ -94,11 +94,14 @@ int main (void){
 					//i.e. send the editor buffer
 					// (msgsnd(ATM_ID, &editorBuffer,len+1, 0) == -1){
 					// De-comment below to send back to the user 			
-					// strcpy(userBuffer.messagetext editorBuffer.messagetext);
-					// if (msgsnd(ATM_ID, &userBuffer,len+1, 0) == -1){
-					// 	printf("Message was not sent\n");
-					// 	perror("msgsnd");
-					// }
+					strcpy(userBuffer.messagetext, editorBuffer.messagetext);
+					if (msgsnd(ATM_ID, &userBuffer,len+1, 0) == -1){
+						printf("Message was not sent\n\n");
+						perror("msgsnd");
+					}
+					else {
+						printf("Tried to send back to the ATM\n");
+					}
 				}
 
 			}

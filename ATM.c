@@ -66,7 +66,13 @@ int main(int argc, const char *argv[]){
 			perror("msgsnd");
 		}		// if (serverBuffer.messagetext[len-1] == '\n') serverBuffer.messagetext[len-1] = '\0';
 		else {
-
+			if (msgrcv(server_ID, &serverBuffer, sizeof(serverBuffer.messagetext), 0, 0) == -1) {
+				perror("msgrcv");
+				exit(1);
+			}
+			{
+				printf("ATM Result = %s\n", serverBuffer.messagetext);
+			}
 		}
 	}
 

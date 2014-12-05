@@ -42,23 +42,39 @@ int main(int argc, const char *argv[]){
 		}
 		else {
 			//Process the request. Try and log in 
-			int var = Login(receiver.messagetext);
+			int login_result = Login(receiver.messagetext);
 			int len = strlen(receiver.messagetext);
 			printf("We have tried to log in\n");
-			//then we send back the reply
-			//if (Login(receiver.messagetext) > 0 ){
-				//pipe back that it did not work
-				//pipe it back
+			// then we send back the reply
+			if (login_result > 0 ){
+				// pipe back that it did not work
+				// pipe it back
 				strcpy(receiver.messagetext, "OK");
-				if (msgsnd(server_ID, &receiver,len+1, 0) == -1){
-					printf("Message was not sent\n");
-					perror("msgsnd");
-				}
-				else {
-					printf("Editor tries to send message back to server\n");
+				// if (msgsnd(server_ID, &receiver,len+1, 0) == -1){
+				// 	printf("Message was not sent\n");
+				// 	perror("msgsnd");
+				// }
+				// else {
+				// 	printf("Editor tries to send message back to server\n");
 
-				}
-			//}
+				// }
+			}
+			else if (login_result == 0) {
+				strcpy(receiver.messagetext, "NOT OK");
+
+			}
+
+			else{
+				strcpy(receiver.messagetext, "ERROR: NULL STRING");
+			}
+			/* Send the Result back to the DB server */
+			if (msgsnd(server_ID, &receiver,len+1, 0) == -1){
+				printf("Message was not sent\n");
+				perror("msgsnd");
+			}
+			else {
+				printf("Editor tries to send message back to server\n");
+			}
 		//Now we pipe back to the other process to reply 
 		}
 
