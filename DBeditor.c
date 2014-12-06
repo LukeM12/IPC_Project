@@ -40,11 +40,8 @@ int main(int argc, const char *argv[]){
 		perror("msgget");
 		exit(1);
 	}
-	// Login_Cookie = 1;
-	// //char * a = Withdraw("2.5");
-	// strcpy(receiver.messagetext, "Deposit 2");
-	// char *b = ExecuteOperation(receiver, server_ID);
-	// printf("\nb= %s\n", b);
+
+
 	printf("The Database Listener is awake and waiting for Database Input\n=======================\n");
 	/* Start the Database Data Miner  AKA DB editor*/
 	for(;;) { 
@@ -195,8 +192,6 @@ char* Withdraw(char * val_asString){
     char *localString;
     size_t len = 0;
     int bytes_read;
-    char *token2;
-    const char s[2] = ",";
     char copy[100];
     char backup_String[100];
    	//This will be the message to send back to the ATM
@@ -295,14 +290,6 @@ char* Withdraw(char * val_asString){
 	fclose(newDB);
 	fclose(oldDB);
     int status = remove("database.txt");
-
-	// if( status == 0 )
-	//   printf(" file deleted successfully.\n");
-	// else
-	// {
-	//   printf("Unable to delete the file\n");
-	//   perror("Error");
-	// }
 	/* Clean up the files */
    char oldname[] = "database2.txt";
    char newname[] = "database.txt";
@@ -347,17 +334,19 @@ char* Request(char* token){
 		    	token = strtok(NULL, ",");
 
 	    		token = strtok(NULL, ",");
-	    		sprintf(ret, "%.2f", token);
-	    		return 1;
+	    		sprintf(ret, "Funds Availalable = %s", token);
+	    		return ret;
 
 		    }
 		    token = strtok(NULL, ",");
 		    count_fields++;
-		}
+	}
+	printf("The message is = %s", ret);
+	fclose(inFile);
 	count_fields = 0;
 	count_entries++;
 	}
-	return 0;
+	return ret;
 }
 /**
  * Description : Pass in an amount in the form of a string to withdraw from the user 
@@ -470,22 +459,6 @@ char* Deposit(char * val_asString){
    char newname[] = "database.txt";
    
    int test = rename(oldname, newname);
-
- //    int status = remove("database.txt");
-
-	// if( status == 0 )
-	//   printf(" file deleted successfully.\n");
-	// else
-	// {
-	//   printf("Unable to delete the file\n");
-	//   perror("Error");
-	// }
-	/* Clean up the files */
-   // char oldname[] = "database2.txt";
-   // char newname[] = "database.txt";
-   
-   // int test = rename(oldname, newname);
-
    if(test == 0) 
    {
       printf("File renamed successfully");

@@ -60,6 +60,7 @@ void Enter_Shell(int server_ID, struct my_msgbuf serverBuffer){
 	printf("\n\n\nUser Logged in at %s \n\n",asctime (timeinfo) );
 	printf("To Withdraw Money type 'Withdraw X' where X is the amount of money\n");
 	printf("To Deposit Money type 'Deposit Y' where Y is the amount of money\n");
+	printf("To see the balance, do 'Request Funds' \n");
 	char input[200];
 	while(LOGIN_COUNT < 3){
 		fgets(input, sizeof(input), stdin);
